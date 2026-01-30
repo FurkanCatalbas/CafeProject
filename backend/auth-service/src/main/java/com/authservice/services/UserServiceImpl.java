@@ -6,6 +6,7 @@ import com.authservice.models.TokenRequest;
 import com.authservice.models.TokenResponse;
 import com.authservice.models.UserDto;
 import com.authservice.models.UserEntity;
+import com.authservice.models.enums.RoleType;
 import com.authservice.repositorys.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -32,16 +33,26 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public TokenResponse register(UserDto userDto) {
-
         userDto.setPassword(passwordEncoder.encode(userDto.getPassword()));
 
+        // Eğer role null gelirse varsayılan olarak MUSTERI ata (UML'e göre)
+        if (userDto.getRole() == null) {
+            userDto.setRole(RoleType.MUSTERI);
+        }
+
         UserEntity userEntity = toEntity(userDto);
-        userEntity.setEmailAddress(userDto.getEmailAddress());
+
+        // Veritabanındaki 'type' alanı için enum değerini atıyoruz (Null kalmasın diye)
+        userEntity.setType(userDto.getRole().getValue());
+        userEntity.setRole(userDto.getRole());
+
         userEntity = userRepository.save(userEntity);
-        var jwtToken = jwtService.generateToken(toDto(userEntity));
-        var refreshToken = jwtService.generateRefreshToken(toDto(userEntity));
 
+        // Token üretmeden önce ID set edildiğinden emin olmak için
+        UserDto savedUserDto = toDto(userEntity);
 
+        var jwtToken = jwtService.generateToken(savedUserDto);
+        var refreshToken = jwtService.generateRefreshToken(savedUserDto);
 
         return TokenResponse.builder()
                 .accessToken(jwtToken)

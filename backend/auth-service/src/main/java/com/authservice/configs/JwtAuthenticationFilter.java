@@ -1,13 +1,13 @@
 package com.authservice.configs;
 
 import io.jsonwebtoken.Claims;
-import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
@@ -19,7 +19,7 @@ import java.util.Collections;
 import java.util.Map;
 
 @Component
-public class JwtAuthenticationFilter extends OncePerRequestFilter implements Filter {
+public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
     private static final Logger log = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
@@ -29,39 +29,38 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter implements Fil
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
-            throws IOException, ServletException {
+    protected void doFilterInternal(
+            @NonNull HttpServletRequest request,
+            @NonNull HttpServletResponse response,
+            @NonNull FilterChain filterChain
+    ) throws ServletException, IOException {
 
+        final String authHeader = request.getHeader("Authorization");
+        final String jwt;
+        final String userName;
 
-        String path = request.getRequestURI();
-
-        // Whitelist edilen endpointleri burada kontrol et!
-        if (path.startsWith("/api/auth")) {
-            filterChain.doFilter(request, response); // JWT kontrolü yapmadan devam et
+        // 1. Durum: Header yoksa veya Bearer ile başlamıyorsa zincire devam et ve ÇIK
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            filterChain.doFilter(request, response);
             return;
         }
 
         try {
-            String authorizationHeader = request.getHeader("Authorization");
+            // Artık güvenle substring alabiliriz çünkü yukarıda null kontrolü yaptık
+            jwt = authHeader.substring(7);
 
-            if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
-                System.out.println("Authorization header not found");
-            }
-
-            String token = authorizationHeader.substring(7);
-
-            if (!isJwtValid(token)) {
+            if (!isJwtValid(jwt)) {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                response.getWriter().write("Invalid");
+                response.getWriter().write("Invalid Token");
                 return;
             }
 
-            String userName = jwtService.extractUsername(token);
-            if (userName != null) {
-                Claims claims = jwtService.extractAllClaims(token);
+            userName = jwtService.extractUsername(jwt);
+
+            if (userName != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                Claims claims = jwtService.extractAllClaims(jwt);
                 Map<String, Object> userObject = (Map<String, Object>) claims.get("userObject");
 
-                // Token'ı credential olarak kullanmak yerine null geç
                 UsernamePasswordAuthenticationToken authentication =
                         new UsernamePasswordAuthenticationToken(userObject, null, Collections.emptyList());
 
@@ -74,7 +73,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter implements Fil
         } catch (Exception ex) {
             log.error("Authentication error", ex);
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.getWriter().write("Authentication");
+            response.getWriter().write("Authentication failed: " + ex.getMessage());
         }
     }
 

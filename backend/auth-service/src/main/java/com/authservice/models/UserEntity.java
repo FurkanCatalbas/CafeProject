@@ -6,6 +6,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import com.authservice.models.enums.RoleType;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.util.Collection;
 import java.util.List;
@@ -22,7 +24,7 @@ public class UserEntity implements UserDetails{
     @GeneratedValue(strategy = GenerationType.IDENTITY) // AUTO ??
     private Integer id;
 
-    @Column(name = "TYPE", columnDefinition = "smallint", nullable = false)
+    @Column(name = "TYPE", columnDefinition = "smallint", nullable = true)
     private Integer type;
 
     @Column(name = "USER_NAME", length = 50 ,nullable = false)
@@ -40,12 +42,15 @@ public class UserEntity implements UserDetails{
     @Column(name = "EMAIL_ADDRESS", length = 50,nullable = false)
     private String emailAddress;
 
-    @Column(name = "ROLE_NAME", length = 50 ,nullable = false)
-    private String roleName;
+    @Enumerated(EnumType.STRING) // Veritabanına "ADMIN", "MUSTERI" gibi yazması için (Okunabilirlik sağlar)
+    @Column(name = "ROLE_NAME", length = 20)
+    private RoleType role;
+
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of();
+        // RoleType null değilse adını döndürür
+        return List.of(new SimpleGrantedAuthority(role.name()));
     }
 
     @Override

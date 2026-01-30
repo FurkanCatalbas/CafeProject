@@ -1,5 +1,6 @@
 package com.authservice.models;
 
+import com.authservice.models.enums.RoleType;
 import lombok.Data;
 
 @Data
@@ -18,7 +19,7 @@ public class UserDto {
 
     private String emailAddress;
 
-    private String roleName;
+    private RoleType role;
 
 
 }

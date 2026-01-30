@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.io.IOException;
 
 @RestController
-@RequestMapping( "/api/auth")
+@RequestMapping("/api/auth")
 @RequiredArgsConstructor
 public class UserController {
 
@@ -26,6 +26,7 @@ public class UserController {
     public ResponseEntity<TokenResponse> register(@RequestBody UserDto userDto) {
         return ResponseEntity.ok(userService.register(userDto));
     }
+
     @PostMapping("/token")
     public ResponseEntity<TokenResponse> authenticate(@RequestBody TokenRequest request) {
         return ResponseEntity.ok(userService.getToken(request));
@@ -35,6 +36,4 @@ public class UserController {
     public void refreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
         userService.refreshToken(request, response);
     }
-
-
 }
