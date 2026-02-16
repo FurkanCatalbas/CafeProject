@@ -39,14 +39,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         final String jwt;
         final String userName;
 
-        // 1. Durum: Header yoksa veya Bearer ile başlamıyorsa zincire devam et ve ÇIK
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
         }
 
         try {
-            // Artık güvenle substring alabiliriz çünkü yukarıda null kontrolü yaptık
             jwt = authHeader.substring(7);
 
             if (!isJwtValid(jwt)) {

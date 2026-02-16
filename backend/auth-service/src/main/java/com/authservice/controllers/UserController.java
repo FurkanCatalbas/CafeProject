@@ -7,6 +7,7 @@ import com.authservice.services.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -24,7 +25,7 @@ public class UserController {
 
     @PostMapping("/register")
     public ResponseEntity<TokenResponse> register(@RequestBody UserDto userDto) {
-        return ResponseEntity.ok(userService.register(userDto));
+        return ResponseEntity.status(HttpStatus.CREATED).body(userService.register(userDto)); // 200 yerine created 201 dönmesi için
     }
 
     @PostMapping("/token")
