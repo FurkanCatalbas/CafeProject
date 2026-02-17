@@ -1,5 +1,6 @@
 package com.authservice.models;
 
+import com.authservice.models.Common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -18,11 +19,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "USERS")
-public class UserEntity implements UserDetails{
-    @Id
-    @Column(name = "ID", nullable = false)
-    @GeneratedValue(strategy = GenerationType.IDENTITY) // AUTO ??
-    private Integer id;
+public class UserEntity extends BaseEntity implements UserDetails{
 
     @Column(name = "TYPE", columnDefinition = "smallint", nullable = true)
     private Integer type;
