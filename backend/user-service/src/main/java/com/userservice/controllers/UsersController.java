@@ -42,6 +42,15 @@ public class UsersController {
         return ResponseEntity.ok(createQueryResponse(dto));
     }
 
+    @DeleteMapping("/{id}")
+    public ResponseEntity<QueryResponse<String>> delete(@PathVariable("id") Integer id) {
+
+        QueryResponse<String> queryResponse = new QueryResponse<>();
+        usersService.delete(id);
+        return ResponseEntity.status(HttpStatus.OK).body(queryResponse);
+
+    }
+
 
 
 

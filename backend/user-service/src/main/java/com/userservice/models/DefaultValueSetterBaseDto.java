@@ -22,8 +22,8 @@ public class DefaultValueSetterBaseDto {
     public static <T extends BaseDto> T setDefaultValue(T dto, RecordStatusType recordStatusType, Integer userId) {
 
         if(userId==null) {
-            AuthenticateUserDto authUser = CommonAuthenticationUtils.getAuthenticatedInfo();
-            userId=authUser.getUserObjectDto().getUserId();
+           /* AuthenticateUserDto authUser = CommonAuthenticationUtils.getAuthenticatedInfo();
+            userId=authUser.getUserObjectDto().getUserId(); */
         }
 
         switch (recordStatusType) {

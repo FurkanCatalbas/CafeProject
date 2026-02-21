@@ -23,14 +23,14 @@ public abstract class BaseEntity implements Cloneable, Serializable {
     private Integer id;
 
 
-    @Column(name = "UUID", updatable = false, columnDefinition = "uniqueidentifier")
-    private String uuid;
+    @Column(name = "UUID", updatable = false, columnDefinition = "uuid")
+    private UUID uuid; // string
 
 
-    @Column(name = "CREATE_DATE",nullable = false)
+    @Column(name = "CREATE_DATE",nullable = true)
     private LocalDateTime createDate;
 
-    @Column(name = "CREATE_FK_USER",nullable = false)
+    @Column(name = "CREATE_FK_USER",nullable = true)
     private Integer createFkUser;
 
     @Column(name = "MODIFIED_DATE")
@@ -46,7 +46,7 @@ public abstract class BaseEntity implements Cloneable, Serializable {
     protected void preInsert() {
         this.setUpdateseq(0);
         this.setCreateDate(LocalDateTime.now());
-        this.setUuid(UUID.randomUUID().toString().toUpperCase());
+        this.setUuid(UUID.randomUUID()); //(UUID.randomUUID().toString().toUpperCase());
     }
 
     @PreUpdate

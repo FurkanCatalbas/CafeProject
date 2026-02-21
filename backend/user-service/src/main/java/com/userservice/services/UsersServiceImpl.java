@@ -60,6 +60,15 @@ public class UsersServiceImpl implements UsersService {
         return toDto(entity);
     }
 
+    @Override
+    public void delete(Integer id) {
+
+        if (getById(id) == null) {
+            // throw new CustomResourceNotFoundException("Entity not found");
+        }
+        usersRepository.deleteById(id);
+    }
+
 
 
 
