@@ -11,5 +11,5 @@ import java.io.IOException;
 public interface UserService {
     TokenResponse register(UserDto userDto);
     TokenResponse getToken(TokenRequest tokenRequest);
-    void refreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException;
+    TokenResponse refreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException;
 }

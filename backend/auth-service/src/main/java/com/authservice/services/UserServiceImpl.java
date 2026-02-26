@@ -83,14 +83,16 @@ public class UserServiceImpl implements UserService {
 
 
     @Override
-    public void refreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    public TokenResponse refreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
 
         final String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
         final String refreshToken;
         final String userName;
+        TokenResponse authResponse = null;
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            return;
+            return null;
         }
+
         refreshToken = authHeader.substring(7);
         userName = jwtService.extractUsername(refreshToken);
         if (userName != null) {
@@ -100,13 +102,14 @@ public class UserServiceImpl implements UserService {
             if (jwtService.isTokenValid(refreshToken, userName)) {
                 var accessToken = jwtService.generateToken(toDto(userEntity));
 
-                var authResponse = TokenResponse.builder()
+                authResponse = TokenResponse.builder()
                         .accessToken(accessToken)
                         .refreshToken(refreshToken)
                         .build();
                 new ObjectMapper().writeValue(response.getOutputStream(), authResponse);
             }
         }
+        return authResponse;
     }
 
     private UserDto toDto(UserEntity entity) {

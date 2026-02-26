@@ -34,7 +34,7 @@ public class UserController {
     }
 
     @PostMapping("/refresh-token")
-    public void refreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        userService.refreshToken(request, response);
+    public TokenResponse refreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        return userService.refreshToken(request, response);
     }
 }
