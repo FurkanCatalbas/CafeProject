@@ -7,7 +7,6 @@ import com.authservice.services.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -17,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.io.IOException;
 
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping( "/api/auth")
 @RequiredArgsConstructor
 public class UserController {
 
@@ -25,16 +24,17 @@ public class UserController {
 
     @PostMapping("/register")
     public ResponseEntity<TokenResponse> register(@RequestBody UserDto userDto) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(userService.register(userDto)); // 200 yerine created 201 dönmesi için
+        return ResponseEntity.ok(userService.register(userDto));
     }
-
     @PostMapping("/token")
     public ResponseEntity<TokenResponse> authenticate(@RequestBody TokenRequest request) {
         return ResponseEntity.ok(userService.getToken(request));
     }
 
     @PostMapping("/refresh-token")
-    public TokenResponse refreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        return userService.refreshToken(request, response);
+    public void refreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        userService.refreshToken(request, response);
     }
+
+
 }

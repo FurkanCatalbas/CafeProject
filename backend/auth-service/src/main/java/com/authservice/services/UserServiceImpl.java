@@ -6,7 +6,6 @@ import com.authservice.models.TokenRequest;
 import com.authservice.models.TokenResponse;
 import com.authservice.models.UserDto;
 import com.authservice.models.UserEntity;
-import com.authservice.models.enums.RoleType;
 import com.authservice.repositorys.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -33,26 +32,16 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public TokenResponse register(UserDto userDto) {
+
         userDto.setPassword(passwordEncoder.encode(userDto.getPassword()));
 
-        // Eğer role null gelirse varsayılan olarak MUSTERI ata (UML'e göre)
-        if (userDto.getRole() == null) {
-            userDto.setRole(RoleType.MUSTERI);
-        }
-
         UserEntity userEntity = toEntity(userDto);
-
-        // Veritabanındaki 'type' alanı için enum değerini atıyoruz (Null kalmasın diye)
-        userEntity.setType(userDto.getRole().getValue());
-        userEntity.setRole(userDto.getRole());
-
+        userEntity.setEmailAddress(userDto.getEmailAddress());
         userEntity = userRepository.save(userEntity);
+        var jwtToken = jwtService.generateToken(toDto(userEntity));
+        var refreshToken = jwtService.generateRefreshToken(toDto(userEntity));
 
-        // Token üretmeden önce ID set edildiğinden emin olmak için
-        UserDto savedUserDto = toDto(userEntity);
 
-        var jwtToken = jwtService.generateToken(savedUserDto);
-        var refreshToken = jwtService.generateRefreshToken(savedUserDto);
 
         return TokenResponse.builder()
                 .accessToken(jwtToken)
@@ -83,16 +72,14 @@ public class UserServiceImpl implements UserService {
 
 
     @Override
-    public TokenResponse refreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    public void refreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
 
         final String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
         final String refreshToken;
         final String userName;
-        TokenResponse authResponse = null;
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            return null;
+            return;
         }
-
         refreshToken = authHeader.substring(7);
         userName = jwtService.extractUsername(refreshToken);
         if (userName != null) {
@@ -102,14 +89,13 @@ public class UserServiceImpl implements UserService {
             if (jwtService.isTokenValid(refreshToken, userName)) {
                 var accessToken = jwtService.generateToken(toDto(userEntity));
 
-                authResponse = TokenResponse.builder()
+                var authResponse = TokenResponse.builder()
                         .accessToken(accessToken)
                         .refreshToken(refreshToken)
                         .build();
                 new ObjectMapper().writeValue(response.getOutputStream(), authResponse);
             }
         }
-        return authResponse;
     }
 
     private UserDto toDto(UserEntity entity) {

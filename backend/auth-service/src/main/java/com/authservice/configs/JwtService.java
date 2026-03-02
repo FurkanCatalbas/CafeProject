@@ -35,36 +35,29 @@ public class JwtService {
     }
 
     public String generateToken(UserDto userDto) {
+
         return buildToken(userDto, jwtExpiration);
     }
 
-    public String generateRefreshToken(UserDto userDto) {
+    public String generateRefreshToken(
+            UserDto userDto
+    ) {
         return buildToken(userDto, refreshExpiration);
     }
 
     private String buildToken(UserDto userDto, long expiration) {
+
         Map<String, Object> mapUser = new HashMap<>();
-
-        // NullPointerException Önlemleri:
-        // .NET'teki '??' (null coalescing) mantığıyla kontrolleri yapıyoruz
-
-        mapUser.put("userId", userDto.getId() != null ? userDto.getId().toString() : "0");
+        mapUser.put("userId", userDto.getId().toString());
         mapUser.put("username", userDto.getUsername());
-        mapUser.put("fullName", (userDto.getFirstName() != null ? userDto.getFirstName() : "") + " " +
-                (userDto.getLastName() != null ? userDto.getLastName() : ""));
+        mapUser.put("fullName", userDto.getFirstName()+" "+userDto.getLastName());
+        mapUser.put("userType", userDto.getType().toString());
 
-        // UML diyagramındaki type mantığına göre Enum üzerinden değeri alıyoruz
-        if (userDto.getRole() != null) {
-            mapUser.put("userType", String.valueOf(userDto.getRole().getValue()));
-            mapUser.put("roles", new String[]{userDto.getRole().name()});
-        } else {
-            // Eğer rol null ise varsayılan değerler (Örn: Müşteri)
-            mapUser.put("userType", "3");
-            mapUser.put("roles", new String[]{"MUSTERI"});
-        }
+        mapUser.put("roles", new String[]{userDto.getRoleName()});
 
         Map<String, Object> extraClaims = new HashMap<>();
         extraClaims.put("userObject", mapUser);
+
 
         return Jwts
                 .builder()
@@ -89,7 +82,7 @@ public class JwtService {
         return extractClaim(token, Claims::getExpiration);
     }
 
-    public Claims extractAllClaims(String token) {
+    Claims extractAllClaims(String token) {
         return Jwts
                 .parserBuilder()
                 .setSigningKey(getSignInKey())
@@ -103,3 +96,4 @@ public class JwtService {
         return Keys.hmacShaKeyFor(keyBytes);
     }
 }
+
