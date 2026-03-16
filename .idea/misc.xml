@@ -10,6 +10,7 @@
         <option value="$PROJECT_DIR$/backend/demo/pom.xml" />
         <option value="$PROJECT_DIR$/backend/auth-service/pom.xml" />
         <option value="$PROJECT_DIR$/backend/user-service/pom.xml" />
+        <option value="$PROJECT_DIR$/backend/wise-core/pom.xml" />
       </list>
     </option>
     <option name="ignoredFiles">
