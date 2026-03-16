@@ -1,8 +1,8 @@
 package com.userservice.services;
 
-import com.userservice.enums.RecordStatusType;
+import com.wise.core.enums.RecordStatusType;               // wise-core'dan gelecek
 import com.userservice.mappers.UserMapper;
-import com.userservice.models.DefaultValueSetterBaseDto;
+import com.wise.core.models.DefaultValueSetterBaseDto;  // wise-core'dan gelecek
 import com.userservice.models.UserDto;
 import com.userservice.models.UserEntity;
 import com.userservice.repository.UsersRepository;

@@ -2,6 +2,7 @@ package com.userservice.models;
 
 import lombok.Getter;
 import lombok.Setter;
+import com.wise.core.models.BaseDto; // wise-core'dan gelecek
 
 @Getter
 @Setter

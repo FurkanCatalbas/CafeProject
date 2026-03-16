@@ -1,7 +1,6 @@
 package com.userservice.mappers;
 
-
-import com.userservice.models.UserDto;
+import com.userservice.models.UserDto;     // wise-core'dan gelecek
 import com.userservice.models.UserEntity;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;

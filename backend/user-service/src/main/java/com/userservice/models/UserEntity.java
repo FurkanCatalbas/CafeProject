@@ -1,5 +1,6 @@
 package com.userservice.models;
 
+import com.wise.core.models.BaseEntity;  // wise-core'dan gelecek
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;

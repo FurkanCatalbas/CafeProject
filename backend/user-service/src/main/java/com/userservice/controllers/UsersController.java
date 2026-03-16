@@ -1,7 +1,7 @@
 package com.userservice.controllers;
 
 
-import com.userservice.models.QueryResponse;
+import com.wise.core.models.QueryResponse;   // wise-core'dan gelecek
 import com.userservice.models.UserDto;
 import com.userservice.services.UsersService;
 import lombok.RequiredArgsConstructor;
