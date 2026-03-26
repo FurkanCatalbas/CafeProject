@@ -33,7 +33,6 @@ public class UsersController {
         return ResponseEntity.ok(createQueryResponse(returnDto));
     }
 
-
     @GetMapping("/{id}")
     public ResponseEntity<QueryResponse<UserDto>> getById(@PathVariable("id") Integer id) {
         UserDto dto = usersService.getById(id);
@@ -42,15 +41,12 @@ public class UsersController {
         }
         return ResponseEntity.ok(createQueryResponse(dto));
     }
-
     @RequiredRole("ADMIN")
     @DeleteMapping("/{id}")
     public ResponseEntity<QueryResponse<String>> delete(@PathVariable("id") Integer id) {
-
         QueryResponse<String> queryResponse = new QueryResponse<>();
         usersService.delete(id);
         return ResponseEntity.status(HttpStatus.OK).body(queryResponse);
-
     }
 
     private <T extends Serializable> QueryResponse<T> createQueryResponse(T data) {

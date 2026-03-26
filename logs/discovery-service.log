@@ -2698,3 +2698,383 @@ Caused by: java.lang.ClassNotFoundException: org.springframework.boot.thread.Thr
 2026-03-26 04:06:47 INFO Shut down
 2026-03-26 04:06:47 INFO Shutting down DiscoveryClient ...
 2026-03-26 04:06:47 INFO Completed shut down of DiscoveryClient
+2026-03-26 22:02:47 INFO Starting DiscoveryServiceApplication using Java 21.0.10 with PID 12048 (C:\Users\ayilm\Documents\GitHub\CafeProject\backend\discovery-service\target\classes started by ayilm in C:\Users\ayilm\Documents\GitHub\CafeProject)
+2026-03-26 22:02:47 INFO No active profile set, falling back to 1 default profile: "default"
+2026-03-26 22:02:48 INFO BeanFactory id=0c987430-a260-3d13-a8ae-b182c809561c
+2026-03-26 22:02:48 INFO Tomcat initialized with port 10100 (http)
+2026-03-26 22:02:48 INFO Initializing ProtocolHandler ["http-nio-10100"]
+2026-03-26 22:02:48 INFO Starting service [Tomcat]
+2026-03-26 22:02:48 INFO Starting Servlet engine: [Apache Tomcat/10.1.33]
+2026-03-26 22:02:48 INFO Initializing Spring embedded WebApplicationContext
+2026-03-26 22:02:48 INFO Root WebApplicationContext: initialization completed in 1165 ms
+2026-03-26 22:02:50 INFO Using JSON encoding codec LegacyJacksonJson
+2026-03-26 22:02:50 INFO Using JSON decoding codec LegacyJacksonJson
+2026-03-26 22:02:51 INFO Using XML encoding codec XStreamXml
+2026-03-26 22:02:51 INFO Using XML decoding codec XStreamXml
+2026-03-26 22:02:53 WARN Spring Cloud LoadBalancer is currently working with the default cache. While this cache implementation is useful for development and tests, it's recommended to use Caffeine cache in production.You can switch to using Caffeine cache, by adding it and org.springframework.cache.caffeine.CaffeineCacheManager to the classpath.
+2026-03-26 22:02:53 INFO Setting initial instance status as: STARTING
+2026-03-26 22:02:53 INFO Initializing Eureka in region us-east-1
+2026-03-26 22:02:53 INFO Client configured to neither register nor query for data.
+2026-03-26 22:02:53 INFO Discovery Client initialized at timestamp 1774551773150 with initial instances count: 0
+2026-03-26 22:02:53 INFO Initializing ...
+2026-03-26 22:02:53 WARN The replica size seems to be empty. Check the route 53 DNS Registry
+2026-03-26 22:02:53 INFO Finished initializing remote region registries. All known remote regions: []
+2026-03-26 22:02:53 INFO Initialized
+2026-03-26 22:02:53 INFO Exposing 1 endpoint beneath base path '/actuator'
+2026-03-26 22:02:53 INFO Registering application DISCOVERY-SERVICE with eureka with status UP
+2026-03-26 22:02:53 INFO Starting ProtocolHandler ["http-nio-10100"]
+2026-03-26 22:02:53 INFO isAws returned false
+2026-03-26 22:02:53 INFO Initialized server context
+2026-03-26 22:02:53 INFO Got 1 instances from neighboring DS node
+2026-03-26 22:02:53 INFO Renew threshold is: 1
+2026-03-26 22:02:53 INFO Changing status to UP
+2026-03-26 22:02:53 INFO Started Eureka Server
+2026-03-26 22:02:53 INFO Tomcat started on port 10100 (http) with context path '/'
+2026-03-26 22:02:53 INFO Updating port to 10100
+2026-03-26 22:02:53 INFO Started DiscoveryServiceApplication in 6.407 seconds (process running for 18.08)
+2026-03-26 22:02:57 INFO Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-03-26 22:02:57 INFO Initializing Servlet 'dispatcherServlet'
+2026-03-26 22:02:57 INFO Completed initialization in 4 ms
+2026-03-26 22:03:03 INFO Unregistering application DISCOVERY-SERVICE with eureka with status DOWN
+2026-03-26 22:03:03 INFO Commencing graceful shutdown. Waiting for active requests to complete
+2026-03-26 22:03:03 INFO Graceful shutdown complete
+2026-03-26 22:03:03 INFO Shutting down Eureka Server..
+2026-03-26 22:03:03 INFO Shutting down ...
+2026-03-26 22:03:03 INFO Shut down
+2026-03-26 22:03:03 INFO Eureka Service is now shutdown...
+2026-03-26 22:03:03 INFO Shutting down ...
+2026-03-26 22:03:03 INFO Shut down
+2026-03-26 22:03:03 INFO Shutting down DiscoveryClient ...
+2026-03-26 22:03:03 INFO Completed shut down of DiscoveryClient
+2026-03-26 22:03:05 INFO Starting DiscoveryServiceApplication using Java 21.0.10 with PID 4444 (C:\Users\ayilm\Documents\GitHub\CafeProject\backend\discovery-service\target\classes started by ayilm in C:\Users\ayilm\Documents\GitHub\CafeProject)
+2026-03-26 22:03:05 INFO No active profile set, falling back to 1 default profile: "default"
+2026-03-26 22:03:06 INFO BeanFactory id=0c987430-a260-3d13-a8ae-b182c809561c
+2026-03-26 22:03:06 INFO Tomcat initialized with port 10100 (http)
+2026-03-26 22:03:06 INFO Initializing ProtocolHandler ["http-nio-10100"]
+2026-03-26 22:03:06 INFO Starting service [Tomcat]
+2026-03-26 22:03:06 INFO Starting Servlet engine: [Apache Tomcat/10.1.33]
+2026-03-26 22:03:06 INFO Initializing Spring embedded WebApplicationContext
+2026-03-26 22:03:06 INFO Root WebApplicationContext: initialization completed in 861 ms
+2026-03-26 22:03:06 INFO Using JSON encoding codec LegacyJacksonJson
+2026-03-26 22:03:06 INFO Using JSON decoding codec LegacyJacksonJson
+2026-03-26 22:03:06 INFO Using XML encoding codec XStreamXml
+2026-03-26 22:03:06 INFO Using XML decoding codec XStreamXml
+2026-03-26 22:03:07 WARN Spring Cloud LoadBalancer is currently working with the default cache. While this cache implementation is useful for development and tests, it's recommended to use Caffeine cache in production.You can switch to using Caffeine cache, by adding it and org.springframework.cache.caffeine.CaffeineCacheManager to the classpath.
+2026-03-26 22:03:07 INFO Setting initial instance status as: STARTING
+2026-03-26 22:03:07 INFO Initializing Eureka in region us-east-1
+2026-03-26 22:03:07 INFO Client configured to neither register nor query for data.
+2026-03-26 22:03:07 INFO Discovery Client initialized at timestamp 1774551787514 with initial instances count: 0
+2026-03-26 22:03:07 INFO Initializing ...
+2026-03-26 22:03:07 WARN The replica size seems to be empty. Check the route 53 DNS Registry
+2026-03-26 22:03:07 INFO Finished initializing remote region registries. All known remote regions: []
+2026-03-26 22:03:07 INFO Initialized
+2026-03-26 22:03:07 INFO Exposing 1 endpoint beneath base path '/actuator'
+2026-03-26 22:03:07 INFO Registering application DISCOVERY-SERVICE with eureka with status UP
+2026-03-26 22:03:07 INFO Starting ProtocolHandler ["http-nio-10100"]
+2026-03-26 22:03:07 INFO isAws returned false
+2026-03-26 22:03:07 INFO Initialized server context
+2026-03-26 22:03:07 INFO Got 1 instances from neighboring DS node
+2026-03-26 22:03:07 INFO Renew threshold is: 1
+2026-03-26 22:03:07 INFO Changing status to UP
+2026-03-26 22:03:07 INFO Started Eureka Server
+2026-03-26 22:03:07 INFO Tomcat started on port 10100 (http) with context path '/'
+2026-03-26 22:03:07 INFO Updating port to 10100
+2026-03-26 22:03:07 INFO Started DiscoveryServiceApplication in 2.503 seconds (process running for 3.34)
+2026-03-26 22:03:10 INFO Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-03-26 22:03:10 INFO Initializing Servlet 'dispatcherServlet'
+2026-03-26 22:03:10 INFO Completed initialization in 1 ms
+2026-03-26 22:03:16 INFO Registered instance AUTH-SERVICE/192.168.1.25:auth-service:10109 with status DOWN (replication=false)
+2026-03-26 22:03:16 INFO Cancelled instance AUTH-SERVICE/192.168.1.25:auth-service:10109 (replication=false)
+2026-03-26 22:03:18 INFO Registered instance GATEWAY-SERVICE/192.168.1.25:gateway-service:10101 with status DOWN (replication=false)
+2026-03-26 22:03:19 INFO Registered instance USER-SERVICE/192.168.1.25:user-service with status DOWN (replication=false)
+2026-03-26 22:03:23 INFO Registered instance AUTH-SERVICE/192.168.1.25:auth-service:10109 with status UP (replication=false)
+2026-03-26 22:03:23 INFO Cancelled instance GATEWAY-SERVICE/192.168.1.25:gateway-service:10101 (replication=false)
+2026-03-26 22:03:30 INFO Registered instance GATEWAY-SERVICE/192.168.1.25:gateway-service:10101 with status UP (replication=false)
+2026-03-26 22:03:38 INFO Registered instance USER-SERVICE/192.168.1.25:user-service with status UP (replication=false)
+2026-03-26 22:04:07 INFO Running the evict task with compensationTime 0ms
+2026-03-26 22:05:07 INFO Running the evict task with compensationTime 14ms
+2026-03-26 22:05:54 INFO Registered instance GATEWAY-SERVICE/192.168.1.25:gateway-service:10101 with status DOWN (replication=false)
+2026-03-26 22:06:00 INFO Cancelled instance GATEWAY-SERVICE/192.168.1.25:gateway-service:10101 (replication=false)
+2026-03-26 22:06:04 INFO Registered instance GATEWAY-SERVICE/192.168.1.25:gateway-service:10101 with status UP (replication=false)
+2026-03-26 22:06:07 INFO Running the evict task with compensationTime 23ms
+2026-03-26 22:07:07 INFO Running the evict task with compensationTime 9ms
+2026-03-26 22:08:01 INFO Registered instance GATEWAY-SERVICE/192.168.1.25:gateway-service:10101 with status DOWN (replication=false)
+2026-03-26 22:08:06 INFO Cancelled instance GATEWAY-SERVICE/192.168.1.25:gateway-service:10101 (replication=false)
+2026-03-26 22:08:07 INFO Running the evict task with compensationTime 14ms
+2026-03-26 22:08:18 INFO Registered instance GATEWAY-SERVICE/localhost:gateway-service:10101 with status UP (replication=false)
+2026-03-26 22:09:07 INFO Running the evict task with compensationTime 2ms
+2026-03-26 22:10:07 INFO Running the evict task with compensationTime 14ms
+2026-03-26 22:10:35 INFO Registered instance GATEWAY-SERVICE/localhost:gateway-service:10101 with status DOWN (replication=false)
+2026-03-26 22:10:40 INFO Cancelled instance GATEWAY-SERVICE/localhost:gateway-service:10101 (replication=false)
+2026-03-26 22:10:45 INFO Registered instance GATEWAY-SERVICE/192.168.1.25:gateway-service:10101 with status UP (replication=false)
+2026-03-26 22:11:07 INFO Running the evict task with compensationTime 12ms
+2026-03-26 22:12:07 INFO Running the evict task with compensationTime 0ms
+2026-03-26 22:13:07 WARN The replica size seems to be empty. Check the route 53 DNS Registry
+2026-03-26 22:13:07 INFO Running the evict task with compensationTime 7ms
+2026-03-26 22:14:07 INFO Running the evict task with compensationTime 7ms
+2026-03-26 22:15:07 INFO Running the evict task with compensationTime 0ms
+2026-03-26 22:16:07 INFO Running the evict task with compensationTime 2ms
+2026-03-26 22:17:07 INFO Running the evict task with compensationTime 11ms
+2026-03-26 22:17:21 INFO Registered instance AUTH-SERVICE/192.168.1.25:auth-service:10109 with status DOWN (replication=false)
+2026-03-26 22:17:24 INFO Cancelled instance AUTH-SERVICE/192.168.1.25:auth-service:10109 (replication=false)
+2026-03-26 22:17:30 INFO Registered instance AUTH-SERVICE/192.168.1.25:auth-service:10109 with status UP (replication=false)
+2026-03-26 22:17:33 INFO Registered instance USER-SERVICE/192.168.1.25:user-service with status DOWN (replication=false)
+2026-03-26 22:17:56 INFO Registered instance USER-SERVICE/192.168.1.25:user-service with status UP (replication=false)
+2026-03-26 22:18:07 INFO Current renewal threshold is : 6
+2026-03-26 22:18:07 INFO Running the evict task with compensationTime 0ms
+2026-03-26 22:19:06 INFO Unregistering application DISCOVERY-SERVICE with eureka with status DOWN
+2026-03-26 22:19:06 INFO Commencing graceful shutdown. Waiting for active requests to complete
+2026-03-26 22:19:06 INFO Registered instance USER-SERVICE/192.168.1.25:user-service with status DOWN (replication=false)
+2026-03-26 22:19:06 INFO Registered instance AUTH-SERVICE/192.168.1.25:auth-service:10109 with status DOWN (replication=false)
+2026-03-26 22:19:06 INFO Graceful shutdown complete
+2026-03-26 22:19:06 INFO Shutting down Eureka Server..
+2026-03-26 22:19:06 INFO Shutting down ...
+2026-03-26 22:19:06 INFO Shut down
+2026-03-26 22:19:06 INFO Eureka Service is now shutdown...
+2026-03-26 22:19:06 INFO Shutting down ...
+2026-03-26 22:19:06 INFO Shut down
+2026-03-26 22:19:06 INFO Shutting down DiscoveryClient ...
+2026-03-26 22:19:06 INFO Completed shut down of DiscoveryClient
+2026-03-26 22:19:16 INFO Starting DiscoveryServiceApplication using Java 21.0.10 with PID 10308 (C:\Users\ayilm\Documents\GitHub\CafeProject\backend\discovery-service\target\classes started by ayilm in C:\Users\ayilm\Documents\GitHub\CafeProject)
+2026-03-26 22:19:16 INFO No active profile set, falling back to 1 default profile: "default"
+2026-03-26 22:19:16 INFO BeanFactory id=0c987430-a260-3d13-a8ae-b182c809561c
+2026-03-26 22:19:17 INFO Tomcat initialized with port 10100 (http)
+2026-03-26 22:19:17 INFO Initializing ProtocolHandler ["http-nio-10100"]
+2026-03-26 22:19:17 INFO Starting service [Tomcat]
+2026-03-26 22:19:17 INFO Starting Servlet engine: [Apache Tomcat/10.1.33]
+2026-03-26 22:19:17 INFO Initializing Spring embedded WebApplicationContext
+2026-03-26 22:19:17 INFO Root WebApplicationContext: initialization completed in 1133 ms
+2026-03-26 22:19:17 INFO Using JSON encoding codec LegacyJacksonJson
+2026-03-26 22:19:17 INFO Using JSON decoding codec LegacyJacksonJson
+2026-03-26 22:19:18 INFO Using XML encoding codec XStreamXml
+2026-03-26 22:19:18 INFO Using XML decoding codec XStreamXml
+2026-03-26 22:19:18 WARN Spring Cloud LoadBalancer is currently working with the default cache. While this cache implementation is useful for development and tests, it's recommended to use Caffeine cache in production.You can switch to using Caffeine cache, by adding it and org.springframework.cache.caffeine.CaffeineCacheManager to the classpath.
+2026-03-26 22:19:18 INFO Setting initial instance status as: STARTING
+2026-03-26 22:19:18 INFO Initializing Eureka in region us-east-1
+2026-03-26 22:19:18 INFO Client configured to neither register nor query for data.
+2026-03-26 22:19:18 INFO Discovery Client initialized at timestamp 1774552758910 with initial instances count: 0
+2026-03-26 22:19:18 INFO Initializing ...
+2026-03-26 22:19:18 WARN The replica size seems to be empty. Check the route 53 DNS Registry
+2026-03-26 22:19:18 INFO Finished initializing remote region registries. All known remote regions: []
+2026-03-26 22:19:18 INFO Initialized
+2026-03-26 22:19:18 INFO Exposing 1 endpoint beneath base path '/actuator'
+2026-03-26 22:19:19 INFO Registering application DISCOVERY-SERVICE with eureka with status UP
+2026-03-26 22:19:19 INFO Starting ProtocolHandler ["http-nio-10100"]
+2026-03-26 22:19:19 INFO isAws returned false
+2026-03-26 22:19:19 INFO Initialized server context
+2026-03-26 22:19:19 INFO Got 1 instances from neighboring DS node
+2026-03-26 22:19:19 INFO Renew threshold is: 1
+2026-03-26 22:19:19 INFO Changing status to UP
+2026-03-26 22:19:19 INFO Started Eureka Server
+2026-03-26 22:19:19 INFO Tomcat started on port 10100 (http) with context path '/'
+2026-03-26 22:19:19 INFO Updating port to 10100
+2026-03-26 22:19:19 INFO Started DiscoveryServiceApplication in 3.366 seconds (process running for 4.142)
+2026-03-26 22:19:20 INFO Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-03-26 22:19:20 INFO Initializing Servlet 'dispatcherServlet'
+2026-03-26 22:19:20 INFO Completed initialization in 1 ms
+2026-03-26 22:19:20 INFO Registered instance GATEWAY-SERVICE/192.168.1.25:gateway-service:10101 with status UP (replication=false)
+2026-03-26 22:19:34 INFO Registered instance USER-SERVICE/192.168.1.25:user-service with status UP (replication=false)
+2026-03-26 22:19:48 WARN DS: Registry: lease doesn't exist, registering resource: AUTH-SERVICE - 192.168.1.25:auth-service:10109
+2026-03-26 22:19:48 WARN Not Found (Renew): AUTH-SERVICE - 192.168.1.25:auth-service:10109
+2026-03-26 22:19:48 INFO Registered instance AUTH-SERVICE/192.168.1.25:auth-service:10109 with status UP (replication=false)
+2026-03-26 22:19:48 INFO Registered instance AUTH-SERVICE/192.168.1.25:auth-service:10109 with status UP (replication=false)
+2026-03-26 22:20:19 INFO Running the evict task with compensationTime 0ms
+2026-03-26 22:21:19 INFO Running the evict task with compensationTime 0ms
+2026-03-26 22:22:19 INFO Running the evict task with compensationTime 0ms
+2026-03-26 22:23:19 INFO Running the evict task with compensationTime 1ms
+2026-03-26 22:24:19 INFO Running the evict task with compensationTime 12ms
+2026-03-26 22:25:19 INFO Running the evict task with compensationTime 17ms
+2026-03-26 22:26:19 INFO Running the evict task with compensationTime 6ms
+2026-03-26 22:27:19 INFO Running the evict task with compensationTime 14ms
+2026-03-26 22:28:19 INFO Running the evict task with compensationTime 9ms
+2026-03-26 22:29:18 WARN The replica size seems to be empty. Check the route 53 DNS Registry
+2026-03-26 22:29:19 INFO Running the evict task with compensationTime 12ms
+2026-03-26 22:30:19 INFO Running the evict task with compensationTime 0ms
+2026-03-26 22:30:41 INFO Registered instance USER-SERVICE/192.168.1.25:user-service with status DOWN (replication=false)
+2026-03-26 22:31:19 INFO Running the evict task with compensationTime 12ms
+2026-03-26 22:32:19 INFO Running the evict task with compensationTime 3ms
+2026-03-26 22:33:19 INFO Running the evict task with compensationTime 10ms
+2026-03-26 22:33:28 INFO Registered instance USER-SERVICE/192.168.1.25:user-service with status UP (replication=false)
+2026-03-26 22:34:18 INFO Current renewal threshold is : 6
+2026-03-26 22:34:19 INFO Running the evict task with compensationTime 10ms
+2026-03-26 22:35:19 INFO Running the evict task with compensationTime 6ms
+2026-03-26 22:36:19 INFO Running the evict task with compensationTime 2ms
+2026-03-26 22:37:19 INFO Running the evict task with compensationTime 0ms
+2026-03-26 22:37:56 INFO Registered instance GATEWAY-SERVICE/192.168.1.25:gateway-service:10101 with status DOWN (replication=false)
+2026-03-26 22:38:01 INFO Cancelled instance GATEWAY-SERVICE/192.168.1.25:gateway-service:10101 (replication=false)
+2026-03-26 22:38:17 INFO Registered instance GATEWAY-SERVICE/localhost:gateway-service:10101 with status UP (replication=false)
+2026-03-26 22:38:19 INFO Running the evict task with compensationTime 0ms
+2026-03-26 22:39:18 WARN The replica size seems to be empty. Check the route 53 DNS Registry
+2026-03-26 22:39:19 INFO Running the evict task with compensationTime 13ms
+2026-03-26 22:40:19 INFO Running the evict task with compensationTime 11ms
+2026-03-26 22:41:19 INFO Running the evict task with compensationTime 0ms
+2026-03-26 22:41:28 INFO Registered instance USER-SERVICE/192.168.1.25:user-service with status DOWN (replication=false)
+2026-03-26 22:41:51 INFO Registered instance USER-SERVICE/192.168.1.25:user-service with status UP (replication=false)
+2026-03-26 22:42:19 INFO Running the evict task with compensationTime 1ms
+2026-03-26 22:43:19 INFO Running the evict task with compensationTime 1ms
+2026-03-26 22:44:19 INFO Running the evict task with compensationTime 0ms
+2026-03-26 22:45:19 INFO Running the evict task with compensationTime 0ms
+2026-03-26 22:46:19 INFO Running the evict task with compensationTime 15ms
+2026-03-26 22:47:19 INFO Running the evict task with compensationTime 1ms
+2026-03-26 22:48:19 INFO Running the evict task with compensationTime 8ms
+2026-03-26 22:49:18 INFO Current renewal threshold is : 6
+2026-03-26 22:49:18 WARN The replica size seems to be empty. Check the route 53 DNS Registry
+2026-03-26 22:49:19 INFO Running the evict task with compensationTime 7ms
+2026-03-26 22:50:19 INFO Running the evict task with compensationTime 6ms
+2026-03-26 22:51:19 INFO Running the evict task with compensationTime 0ms
+2026-03-26 22:52:19 INFO Running the evict task with compensationTime 0ms
+2026-03-26 22:53:19 INFO Running the evict task with compensationTime 4ms
+2026-03-26 22:54:19 INFO Running the evict task with compensationTime 7ms
+2026-03-26 22:55:19 INFO Running the evict task with compensationTime 3ms
+2026-03-26 22:56:19 INFO Running the evict task with compensationTime 13ms
+2026-03-26 22:57:19 INFO Running the evict task with compensationTime 8ms
+2026-03-26 22:58:19 INFO Running the evict task with compensationTime 13ms
+2026-03-26 22:59:18 WARN The replica size seems to be empty. Check the route 53 DNS Registry
+2026-03-26 22:59:19 INFO Running the evict task with compensationTime 4ms
+2026-03-26 23:00:19 INFO Running the evict task with compensationTime 4ms
+2026-03-26 23:01:19 INFO Running the evict task with compensationTime 0ms
+2026-03-26 23:02:19 INFO Running the evict task with compensationTime 5ms
+2026-03-26 23:03:19 INFO Running the evict task with compensationTime 0ms
+2026-03-26 23:04:18 INFO Current renewal threshold is : 6
+2026-03-26 23:04:19 INFO Running the evict task with compensationTime 0ms
+2026-03-26 23:05:19 INFO Running the evict task with compensationTime 16ms
+2026-03-26 23:05:39 INFO Registered instance USER-SERVICE/192.168.1.25:user-service with status DOWN (replication=false)
+2026-03-26 23:05:40 INFO Registered instance GATEWAY-SERVICE/localhost:gateway-service:10101 with status DOWN (replication=false)
+2026-03-26 23:05:41 INFO Unregistering application DISCOVERY-SERVICE with eureka with status DOWN
+2026-03-26 23:05:41 INFO Commencing graceful shutdown. Waiting for active requests to complete
+2026-03-26 23:05:41 INFO Graceful shutdown complete
+2026-03-26 23:05:41 INFO Shutting down Eureka Server..
+2026-03-26 23:05:41 INFO Shutting down ...
+2026-03-26 23:05:41 INFO Shut down
+2026-03-26 23:05:41 INFO Eureka Service is now shutdown...
+2026-03-26 23:05:41 INFO Shutting down ...
+2026-03-26 23:05:41 INFO Shut down
+2026-03-26 23:05:41 INFO Shutting down DiscoveryClient ...
+2026-03-26 23:05:41 INFO Completed shut down of DiscoveryClient
+2026-03-26 23:05:43 INFO Starting DiscoveryServiceApplication using Java 21.0.10 with PID 15476 (C:\Users\ayilm\Documents\GitHub\CafeProject\backend\discovery-service\target\classes started by ayilm in C:\Users\ayilm\Documents\GitHub\CafeProject)
+2026-03-26 23:05:43 INFO No active profile set, falling back to 1 default profile: "default"
+2026-03-26 23:05:44 INFO BeanFactory id=0c987430-a260-3d13-a8ae-b182c809561c
+2026-03-26 23:05:44 INFO Tomcat initialized with port 10100 (http)
+2026-03-26 23:05:44 INFO Initializing ProtocolHandler ["http-nio-10100"]
+2026-03-26 23:05:44 INFO Starting service [Tomcat]
+2026-03-26 23:05:44 INFO Starting Servlet engine: [Apache Tomcat/10.1.33]
+2026-03-26 23:05:44 INFO Initializing Spring embedded WebApplicationContext
+2026-03-26 23:05:44 INFO Root WebApplicationContext: initialization completed in 957 ms
+2026-03-26 23:05:45 INFO Using JSON encoding codec LegacyJacksonJson
+2026-03-26 23:05:45 INFO Using JSON decoding codec LegacyJacksonJson
+2026-03-26 23:05:46 INFO Using XML encoding codec XStreamXml
+2026-03-26 23:05:46 INFO Using XML decoding codec XStreamXml
+2026-03-26 23:05:48 WARN Spring Cloud LoadBalancer is currently working with the default cache. While this cache implementation is useful for development and tests, it's recommended to use Caffeine cache in production.You can switch to using Caffeine cache, by adding it and org.springframework.cache.caffeine.CaffeineCacheManager to the classpath.
+2026-03-26 23:05:48 INFO Setting initial instance status as: STARTING
+2026-03-26 23:05:48 INFO Initializing Eureka in region us-east-1
+2026-03-26 23:05:48 INFO Client configured to neither register nor query for data.
+2026-03-26 23:05:48 INFO Discovery Client initialized at timestamp 1774555548067 with initial instances count: 0
+2026-03-26 23:05:48 INFO Initializing ...
+2026-03-26 23:05:48 WARN The replica size seems to be empty. Check the route 53 DNS Registry
+2026-03-26 23:05:48 INFO Finished initializing remote region registries. All known remote regions: []
+2026-03-26 23:05:48 INFO Initialized
+2026-03-26 23:05:48 INFO Exposing 1 endpoint beneath base path '/actuator'
+2026-03-26 23:05:48 INFO Registering application DISCOVERY-SERVICE with eureka with status UP
+2026-03-26 23:05:48 INFO Starting ProtocolHandler ["http-nio-10100"]
+2026-03-26 23:05:48 INFO isAws returned false
+2026-03-26 23:05:48 INFO Initialized server context
+2026-03-26 23:05:48 INFO Got 1 instances from neighboring DS node
+2026-03-26 23:05:48 INFO Renew threshold is: 1
+2026-03-26 23:05:48 INFO Changing status to UP
+2026-03-26 23:05:48 INFO Started Eureka Server
+2026-03-26 23:05:48 INFO Tomcat started on port 10100 (http) with context path '/'
+2026-03-26 23:05:48 INFO Updating port to 10100
+2026-03-26 23:05:48 INFO Started DiscoveryServiceApplication in 4.893 seconds (process running for 5.804)
+2026-03-26 23:05:49 INFO Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-03-26 23:05:49 INFO Initializing Servlet 'dispatcherServlet'
+2026-03-26 23:05:49 INFO Completed initialization in 3 ms
+2026-03-26 23:05:56 INFO Registered instance GATEWAY-SERVICE/192.168.1.25:gateway-service:10101 with status UP (replication=false)
+2026-03-26 23:06:01 INFO Registered instance USER-SERVICE/192.168.1.25:user-service with status UP (replication=false)
+2026-03-26 23:06:03 INFO Registered instance AUTH-SERVICE/192.168.1.25:auth-service:10109 with status UP (replication=false)
+2026-03-26 23:06:48 INFO Running the evict task with compensationTime 0ms
+2026-03-26 23:07:48 INFO Running the evict task with compensationTime 9ms
+2026-03-26 23:08:48 INFO Running the evict task with compensationTime 13ms
+2026-03-26 23:09:48 INFO Running the evict task with compensationTime 5ms
+2026-03-26 23:10:48 INFO Running the evict task with compensationTime 9ms
+2026-03-26 23:11:48 INFO Running the evict task with compensationTime 3ms
+2026-03-26 23:12:48 INFO Running the evict task with compensationTime 2ms
+2026-03-26 23:13:48 INFO Running the evict task with compensationTime 5ms
+2026-03-26 23:14:48 INFO Running the evict task with compensationTime 4ms
+2026-03-26 23:15:48 WARN The replica size seems to be empty. Check the route 53 DNS Registry
+2026-03-26 23:15:48 INFO Running the evict task with compensationTime 15ms
+2026-03-26 23:16:48 INFO Running the evict task with compensationTime 10ms
+2026-03-26 23:17:48 INFO Running the evict task with compensationTime 0ms
+2026-03-26 23:18:48 INFO Running the evict task with compensationTime 8ms
+2026-03-26 23:18:58 INFO Registered instance USER-SERVICE/192.168.1.25:user-service with status DOWN (replication=false)
+2026-03-26 23:19:00 INFO Registered instance GATEWAY-SERVICE/192.168.1.25:gateway-service:10101 with status DOWN (replication=false)
+2026-03-26 23:19:00 INFO Unregistering application DISCOVERY-SERVICE with eureka with status DOWN
+2026-03-26 23:19:00 INFO Commencing graceful shutdown. Waiting for active requests to complete
+2026-03-26 23:19:01 INFO Graceful shutdown complete
+2026-03-26 23:19:01 INFO Shutting down Eureka Server..
+2026-03-26 23:19:01 INFO Shutting down ...
+2026-03-26 23:19:01 INFO Shut down
+2026-03-26 23:19:01 INFO Eureka Service is now shutdown...
+2026-03-26 23:19:01 INFO Shutting down ...
+2026-03-26 23:19:01 INFO Shut down
+2026-03-26 23:19:01 INFO Shutting down DiscoveryClient ...
+2026-03-26 23:19:01 INFO Completed shut down of DiscoveryClient
+2026-03-26 23:19:03 INFO Starting DiscoveryServiceApplication using Java 21.0.10 with PID 14548 (C:\Users\ayilm\Documents\GitHub\CafeProject\backend\discovery-service\target\classes started by ayilm in C:\Users\ayilm\Documents\GitHub\CafeProject)
+2026-03-26 23:19:03 INFO No active profile set, falling back to 1 default profile: "default"
+2026-03-26 23:19:04 INFO BeanFactory id=0c987430-a260-3d13-a8ae-b182c809561c
+2026-03-26 23:19:04 INFO Tomcat initialized with port 10100 (http)
+2026-03-26 23:19:04 INFO Initializing ProtocolHandler ["http-nio-10100"]
+2026-03-26 23:19:04 INFO Starting service [Tomcat]
+2026-03-26 23:19:04 INFO Starting Servlet engine: [Apache Tomcat/10.1.33]
+2026-03-26 23:19:04 INFO Initializing Spring embedded WebApplicationContext
+2026-03-26 23:19:04 INFO Root WebApplicationContext: initialization completed in 984 ms
+2026-03-26 23:19:04 INFO Using JSON encoding codec LegacyJacksonJson
+2026-03-26 23:19:04 INFO Using JSON decoding codec LegacyJacksonJson
+2026-03-26 23:19:05 INFO Using XML encoding codec XStreamXml
+2026-03-26 23:19:05 INFO Using XML decoding codec XStreamXml
+2026-03-26 23:19:05 WARN Spring Cloud LoadBalancer is currently working with the default cache. While this cache implementation is useful for development and tests, it's recommended to use Caffeine cache in production.You can switch to using Caffeine cache, by adding it and org.springframework.cache.caffeine.CaffeineCacheManager to the classpath.
+2026-03-26 23:19:05 INFO Setting initial instance status as: STARTING
+2026-03-26 23:19:05 INFO Initializing Eureka in region us-east-1
+2026-03-26 23:19:05 INFO Client configured to neither register nor query for data.
+2026-03-26 23:19:05 INFO Discovery Client initialized at timestamp 1774556345779 with initial instances count: 0
+2026-03-26 23:19:05 INFO Initializing ...
+2026-03-26 23:19:05 WARN The replica size seems to be empty. Check the route 53 DNS Registry
+2026-03-26 23:19:05 INFO Finished initializing remote region registries. All known remote regions: []
+2026-03-26 23:19:05 INFO Initialized
+2026-03-26 23:19:05 INFO Exposing 1 endpoint beneath base path '/actuator'
+2026-03-26 23:19:05 INFO Registering application DISCOVERY-SERVICE with eureka with status UP
+2026-03-26 23:19:05 INFO Starting ProtocolHandler ["http-nio-10100"]
+2026-03-26 23:19:05 INFO isAws returned false
+2026-03-26 23:19:05 INFO Initialized server context
+2026-03-26 23:19:05 INFO Got 1 instances from neighboring DS node
+2026-03-26 23:19:05 INFO Renew threshold is: 1
+2026-03-26 23:19:05 INFO Changing status to UP
+2026-03-26 23:19:05 INFO Started Eureka Server
+2026-03-26 23:19:05 INFO Tomcat started on port 10100 (http) with context path '/'
+2026-03-26 23:19:05 INFO Updating port to 10100
+2026-03-26 23:19:05 INFO Started DiscoveryServiceApplication in 3.037 seconds (process running for 3.974)
+2026-03-26 23:19:10 INFO Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-03-26 23:19:10 INFO Initializing Servlet 'dispatcherServlet'
+2026-03-26 23:19:10 INFO Completed initialization in 1 ms
+2026-03-26 23:19:10 INFO Registered instance AUTH-SERVICE/192.168.1.25:auth-service:10109 with status UP (replication=false)
+2026-03-26 23:19:12 INFO Registered instance GATEWAY-SERVICE/192.168.1.25:gateway-service:10101 with status UP (replication=false)
+2026-03-26 23:20:05 INFO Running the evict task with compensationTime 0ms
+2026-03-26 23:21:05 INFO Running the evict task with compensationTime 12ms
+2026-03-26 23:21:26 INFO Registered instance USER-SERVICE/192.168.1.25:user-service with status UP (replication=false)
+2026-03-26 23:22:05 INFO Running the evict task with compensationTime 13ms
+2026-03-26 23:23:05 INFO Running the evict task with compensationTime 10ms
+2026-03-26 23:24:05 INFO Running the evict task with compensationTime 11ms
+2026-03-26 23:25:05 INFO Running the evict task with compensationTime 9ms
+2026-03-26 23:25:45 INFO Registered instance USER-SERVICE/192.168.1.25:user-service with status DOWN (replication=false)
+2026-03-26 23:25:45 INFO Unregistering application DISCOVERY-SERVICE with eureka with status DOWN
+2026-03-26 23:25:45 INFO Registered instance AUTH-SERVICE/192.168.1.25:auth-service:10109 with status DOWN (replication=false)
+2026-03-26 23:25:45 INFO Registered instance GATEWAY-SERVICE/192.168.1.25:gateway-service:10101 with status DOWN (replication=false)
+2026-03-26 23:25:45 INFO Commencing graceful shutdown. Waiting for active requests to complete
+2026-03-26 23:25:45 INFO Graceful shutdown complete
+2026-03-26 23:25:45 INFO Shutting down Eureka Server..
+2026-03-26 23:25:45 INFO Shutting down ...
+2026-03-26 23:25:45 INFO Shut down
+2026-03-26 23:25:45 INFO Eureka Service is now shutdown...
+2026-03-26 23:25:45 INFO Shutting down ...
+2026-03-26 23:25:45 INFO Shut down
+2026-03-26 23:25:45 INFO Shutting down DiscoveryClient ...
+2026-03-26 23:25:45 INFO Completed shut down of DiscoveryClient

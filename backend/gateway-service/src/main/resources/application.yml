@@ -59,26 +59,8 @@ spring:
               - StripPrefix=1           # user-service/** kısmını kaldır, servise /api/users/14 geçsin
               - RemoveRequestHeader=Cookie
               - AuthenticationFilter
-
-          - id: portal-service
-            uri: lb://portal-service  # Load balancer üzerinden
-            predicates:
-              - Path=/portal-service/**  # portal servis için route
-            filters:
-              - StripPrefix=1
-              - RemoveRequestHeader=Cookie
-              - AuthenticationFilter
-
-          - id: product-service
-            uri: lb://product-service  # Load balancer üzerinden
-            predicates:
-              - Path=/product-service/**  # product servis için route
-            filters:
-              - StripPrefix=1
-              - RemoveRequestHeader=Cookie
-              - AuthenticationFilter
-
-
+            metadata:
+                authorizedRoles.DELETE./api/users/**: "ADMIN"
 
 # Application Security Configuration
 application:

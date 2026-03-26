@@ -15,7 +15,7 @@ public class RouteValidator {
             "/auth-service/api/auth/register",
             "/auth-service/api/auth/token",
             "/auth-service/api/auth/refresh-token",
-            "/auth-service/auth/token",
+            "/auth-service/api/auth/token",
             "/eureka"
     );
 
@@ -24,6 +24,6 @@ public class RouteValidator {
                 String path = request.getURI().getPath(); // Bu gateway sonrası path
                 return openApiEndpoints
                         .stream()
-                        .noneMatch(uri -> path.startsWith(uri)); // matchStart yerine startsWith kullanabilirsin
+                        .noneMatch(uri -> pathMatcher.match(uri + "/**", path));
             };
 }
