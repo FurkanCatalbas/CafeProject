@@ -4,6 +4,7 @@ import com.authservice.models.TokenRequest;
 import com.authservice.models.TokenResponse;
 import com.authservice.models.UserDto;
 import com.authservice.services.UserService;
+import com.wise.core.security.RequiredRole;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +31,7 @@ public class UserController {
     public ResponseEntity<TokenResponse> authenticate(@RequestBody TokenRequest request) {
         return ResponseEntity.ok(userService.getToken(request));
     }
-
+    @RequiredRole("ADMIN")
     @PostMapping("/refresh-token")
     public void refreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
         userService.refreshToken(request, response);

@@ -4,6 +4,7 @@ package com.userservice.controllers;
 import com.wise.core.models.QueryResponse;   // wise-core'dan gelecek
 import com.userservice.models.UserDto;
 import com.userservice.services.UsersService;
+import com.wise.core.security.RequiredRole;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -42,6 +43,7 @@ public class UsersController {
         return ResponseEntity.ok(createQueryResponse(dto));
     }
 
+    @RequiredRole("ADMIN")
     @DeleteMapping("/{id}")
     public ResponseEntity<QueryResponse<String>> delete(@PathVariable("id") Integer id) {
 
@@ -50,12 +52,6 @@ public class UsersController {
         return ResponseEntity.status(HttpStatus.OK).body(queryResponse);
 
     }
-
-
-
-
-
-
 
     private <T extends Serializable> QueryResponse<T> createQueryResponse(T data) {
         QueryResponse<T> queryResponse = new QueryResponse<>();

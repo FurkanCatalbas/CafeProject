@@ -12,14 +12,18 @@ public class RouteValidator {
     private static final AntPathMatcher pathMatcher = new AntPathMatcher();
 
     public static final List<String> openApiEndpoints = List.of(
-            "/auth/register",
-            "/auth/token",
+            "/auth-service/api/auth/register",
+            "/auth-service/api/auth/token",
+            "/auth-service/api/auth/refresh-token",
+            "/auth-service/auth/token",
             "/eureka"
     );
 
     public Predicate<ServerHttpRequest> isSecured =
-            request -> openApiEndpoints
-                    .stream()
-                    .noneMatch(uri -> request.getURI().getPath().contains(uri));
-
+            request -> {
+                String path = request.getURI().getPath(); // Bu gateway sonrası path
+                return openApiEndpoints
+                        .stream()
+                        .noneMatch(uri -> path.startsWith(uri)); // matchStart yerine startsWith kullanabilirsin
+            };
 }

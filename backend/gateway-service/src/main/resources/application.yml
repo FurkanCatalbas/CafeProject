@@ -51,6 +51,15 @@ spring:
               - StripPrefix=1
               - RemoveRequestHeader=Cookie
 
+          - id: user-service
+            uri: lb://user-service
+            predicates:
+              - Path=/user-service/**   # Postman URL ile eşleşmeli
+            filters:
+              - StripPrefix=1           # user-service/** kısmını kaldır, servise /api/users/14 geçsin
+              - RemoveRequestHeader=Cookie
+              - AuthenticationFilter
+
           - id: portal-service
             uri: lb://portal-service  # Load balancer üzerinden
             predicates:

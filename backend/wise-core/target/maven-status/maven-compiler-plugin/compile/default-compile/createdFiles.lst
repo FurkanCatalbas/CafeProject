@@ -1,3 +1,4 @@
+com\wise\core\security\RequiredRole.class
 com\wise\core\models\QueryPaging.class
 com\wise\core\models\DefaultValueSetterBaseDto$1.class
 com\wise\core\models\CoreDto.class
@@ -8,7 +9,9 @@ com\wise\core\models\QueryResponses.class
 com\wise\Main.class
 com\wise\core\models\DefaultValueSetterBaseDto.class
 com\wise\core\enums\RecordStatusType.class
+com\wise\core\security\RoleInterceptor.class
 com\wise\core\models\BaseQueryResponse.class
 com\wise\core\models\BaseResponse.class
+com\wise\core\config\WebMvcConfig.class
 com\wise\core\enums\OutcomeType.class
 com\wise\core\models\QueryResponse.class

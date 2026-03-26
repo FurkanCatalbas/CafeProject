@@ -53,7 +53,7 @@ public class JwtService {
         mapUser.put("fullName", userDto.getFirstName()+" "+userDto.getLastName());
         mapUser.put("userType", userDto.getType().toString());
 
-        mapUser.put("roles", new String[]{userDto.getRoleName()});
+        mapUser.put("role", userDto.getRoleName());
 
         Map<String, Object> extraClaims = new HashMap<>();
         extraClaims.put("userObject", mapUser);

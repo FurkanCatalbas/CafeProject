@@ -11,72 +11,60 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+
 @Component
 public class AuthenticationFilter extends AbstractGatewayFilterFactory<AuthenticationFilter.Config> {
 
     @Autowired
     private JwtService jwtService;
+    @Autowired
+    private RouteValidator validator;
 
     public AuthenticationFilter() {
         super(Config.class);
     }
 
-    public static class Config {
-    }
+    public static class Config {}
 
     @Override
     public GatewayFilter apply(Config config) {
         return (exchange, chain) -> {
             ServerHttpRequest request = exchange.getRequest();
 
-            // İzin verilen yollar
-            if (request.getPath().toString().equals("/actuator")) {
-                return chain.filter(exchange);
-            }
+            if (validator.isSecured.test(request)) {
+                // ERR-001: Authorization header eksik
+                if (!request.getHeaders().containsKey(HttpHeaders.AUTHORIZATION)) {
+                    return onError(exchange, "ERR-001: Yetkilendirme basligi eksik", HttpStatus.UNAUTHORIZED);
+                }
 
-            // Authorization Header kontrolü
-            if (!request.getHeaders().containsKey(HttpHeaders.AUTHORIZATION)) {
-                return onError(exchange, "No authorization header", HttpStatus.UNAUTHORIZED);
-            }
+                String authHeader = request.getHeaders().get(HttpHeaders.AUTHORIZATION).get(0);
+                // ERR-002: Token formatı yanlış
+                if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                    return onError(exchange, "ERR-002: Gecersiz yetkilendirme basligi formati", HttpStatus.BAD_REQUEST);
+                }
 
-            String authorizationHeader = request.getHeaders().get(HttpHeaders.AUTHORIZATION).get(0);
+                String token = authHeader.substring("Bearer ".length());
 
-            if (!authorizationHeader.startsWith("Bearer ")) {
-                return onError(exchange, "Authorization header must start with 'Bearer '", HttpStatus.UNAUTHORIZED);
-            }
+                String username = jwtService.extractUsername(token);
 
-            String token = authorizationHeader.substring("Bearer ".length());
-
-            // JWT doğrulama
-            if (!isJwtValid(token)) {
-                return onError(exchange, "JWT token is not valid", HttpStatus.UNAUTHORIZED);
+                if (username == null || !jwtService.isTokenValid(token, username)) {
+                    return onError(exchange, "ERR-003: Gecersiz veya suresi dolmus token", HttpStatus.FORBIDDEN);
+                }
             }
 
             return chain.filter(exchange);
         };
     }
 
-    private boolean isJwtValid(String jwt) {
-        try {
-            // Token'dan kullanıcı adı çıkar ve doğrula
-            String username = jwtService.extractUsername(jwt);
-
-            // Kullanıcı adının geçerli olduğundan emin ol
-            if (username == null || username.isEmpty()) {
-                return false;
-            }
-
-            // Token geçerliliğini kontrol et
-            return jwtService.isTokenValid(jwt, username);
-        } catch (Exception ex) {
-            return false;
-        }
-    }
-
     private Mono<Void> onError(ServerWebExchange exchange, String err, HttpStatus httpStatus) {
         ServerHttpResponse response = exchange.getResponse();
         response.setStatusCode(httpStatus);
 
+        // Postman'da görebilmek için header ekliyoruz
+        response.getHeaders().add("X-Error-Reason", err);
+
+        System.out.println("Hata: " + err + ", Kod: " + httpStatus);
         return response.setComplete();
     }
 }
