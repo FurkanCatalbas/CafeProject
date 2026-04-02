@@ -10,7 +10,6 @@ import com.authservice.repositorys.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -49,8 +48,12 @@ public class UserServiceImpl implements UserService {
         UserEntity userEntity = toEntity(userDto);
         userEntity.setEmailAddress(userDto.getEmailAddress());
         userEntity = userRepository.save(userEntity);
-        var jwtToken = jwtService.generateToken(toDto(userEntity));
-        var refreshToken = jwtService.generateRefreshToken(toDto(userEntity));
+        UserDto tokenDto = toDto(userEntity);
+        if (tokenDto.getId() == null && userEntity.getId() != null) {
+            tokenDto.setId(userEntity.getId());
+        }
+        var jwtToken = jwtService.generateToken(tokenDto);
+        var refreshToken = jwtService.generateRefreshToken(tokenDto);
 
 
 
@@ -110,11 +113,11 @@ public class UserServiceImpl implements UserService {
     }
 
     private UserDto toDto(UserEntity entity) {
-        return UserMapper.INSTANCE.toDto(entity);
+        return UserMapper.toDto(entity);
     }
 
     private UserEntity toEntity(UserDto dto) {
-        return UserMapper.INSTANCE.toEntity(dto);
+        return UserMapper.toEntity(dto);
     }
 
     private List<UserDto> toDtos(List<UserEntity> entities) {

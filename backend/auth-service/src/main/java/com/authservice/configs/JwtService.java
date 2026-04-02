@@ -48,12 +48,14 @@ public class JwtService {
     private String buildToken(UserDto userDto, long expiration) {
 
         Map<String, Object> mapUser = new HashMap<>();
-        mapUser.put("userId", userDto.getId().toString());
+        mapUser.put("userId", userDto.getId() != null ? userDto.getId().toString() : "");
         mapUser.put("username", userDto.getUsername());
-        mapUser.put("fullName", userDto.getFirstName()+" "+userDto.getLastName());
-        mapUser.put("userType", userDto.getType().toString());
+        String fn = userDto.getFirstName() != null ? userDto.getFirstName() : "";
+        String ln = userDto.getLastName() != null ? userDto.getLastName() : "";
+        mapUser.put("fullName", (fn + " " + ln).trim());
+        mapUser.put("userType", userDto.getType() != null ? userDto.getType().toString() : "");
 
-        mapUser.put("role", userDto.getRoleName());
+        mapUser.put("role", userDto.getRoleName() != null ? userDto.getRoleName() : "");
 
         Map<String, Object> extraClaims = new HashMap<>();
         extraClaims.put("userObject", mapUser);

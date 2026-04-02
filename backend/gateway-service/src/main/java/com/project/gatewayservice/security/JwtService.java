@@ -10,7 +10,6 @@ import org.springframework.stereotype.Service;
 
 import java.security.Key;
 import java.util.Date;
-import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -48,8 +47,12 @@ public class JwtService {
 
   public String extractRole(String token) {
     Claims claims = extractAllClaims(token);
-    Map<String, Object> userObject = (Map<String, Object>) claims.get("userObject");
-    return (String) userObject.get("role");
+    Object raw = claims.get("userObject");
+    if (!(raw instanceof Map<?, ?> userObject)) {
+      return null;
+    }
+    Object role = userObject.get("role");
+    return role != null ? role.toString() : null;
   }
 
   private Claims extractAllClaims(String token) {

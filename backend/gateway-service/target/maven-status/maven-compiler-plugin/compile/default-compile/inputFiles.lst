@@ -1,4 +1,5 @@
-/Users/ozgur/Projects/Cagri/WiseRetail/wise-backend/gateway-service/src/main/java/com/wiseretail/gatewayservice/GatewayServiceApplication.java
-/Users/ozgur/Projects/Cagri/WiseRetail/wise-backend/gateway-service/src/main/java/com/wiseretail/gatewayservice/security/AuthenticationFilter.java
-/Users/ozgur/Projects/Cagri/WiseRetail/wise-backend/gateway-service/src/main/java/com/wiseretail/gatewayservice/security/JwtService.java
-/Users/ozgur/Projects/Cagri/WiseRetail/wise-backend/gateway-service/src/main/java/com/wiseretail/gatewayservice/security/RouteValidator.java
+/home/recep/Proje/CafeProject/backend/gateway-service/src/main/java/com/project/gatewayservice/GatewayServiceApplication.java
+/home/recep/Proje/CafeProject/backend/gateway-service/src/main/java/com/project/gatewayservice/config/GatewayHttpClientConfig.java
+/home/recep/Proje/CafeProject/backend/gateway-service/src/main/java/com/project/gatewayservice/security/AuthenticationFilter.java
+/home/recep/Proje/CafeProject/backend/gateway-service/src/main/java/com/project/gatewayservice/security/JwtService.java
+/home/recep/Proje/CafeProject/backend/gateway-service/src/main/java/com/project/gatewayservice/security/RouteValidator.java
