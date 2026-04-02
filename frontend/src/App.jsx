@@ -46,6 +46,17 @@ function decodeJwt(token) {
   }
 }
 
+function hataMesaji(err) {
+  const m = err?.message || "";
+  if (m.includes("Unexpected error") || m === "Unexpected error") {
+    return "Beklenmeyen bir hata oluştu.";
+  }
+  if (m.includes("Request failed")) {
+    return "İstek başarısız oldu. Sunucu çalışıyor mu kontrol edin.";
+  }
+  return m || "Beklenmeyen bir hata oluştu.";
+}
+
 export default function App() {
   const [accessToken, setAccessToken] = useState(localStorage.getItem("accessToken") || "");
   const [refreshTokenValue, setRefreshTokenValue] = useState(localStorage.getItem("refreshToken") || "");
@@ -58,7 +69,7 @@ export default function App() {
     return {
       userId: decoded.userId || decoded.sub || "-",
       username: decoded.sub || "-",
-      role: decoded.role || "UNKNOWN"
+      role: decoded.role || "BİLİNMİYOR"
     };
   }, [accessToken]);
 
@@ -83,25 +94,32 @@ export default function App() {
       <div className="app-shell">
         <header className="navbar">
           <div className="navbar-left">
-            <span className="brand">Cafe Nova</span>
+            <div className="brand-block">
+              <Link to="/" className="brand" style={{ textDecoration: "none" }}>
+                CafeProject
+              </Link>
+              <span className="brand-tagline">Akıllı kafe deneyimi</span>
+            </div>
             <nav className="nav-links">
-              <Link to="/">Home</Link>
-              <Link to="/menu">Menu</Link>
-              <Link to="/users">Users</Link>
+              <Link to="/">Ana sayfa</Link>
+              <Link to="/menu">Menü</Link>
+              <Link to="/users">Kullanıcılar</Link>
             </nav>
           </div>
           <div className="navbar-right">
             {sessionInfo ? (
               <>
-                <span className="nav-user">
-                  {sessionInfo.username} ({sessionInfo.role})
+                <span className="nav-user" title={`${sessionInfo.username} · ${sessionInfo.role}`}>
+                  {sessionInfo.username} · {sessionInfo.role}
                 </span>
-                <button className="secondary small" onClick={onLogout}>Logout</button>
+                <button type="button" className="secondary small" onClick={onLogout}>
+                  Çıkış
+                </button>
               </>
             ) : (
               <>
-                <Link to="/login">Login</Link>
-                <Link to="/register">Register</Link>
+                <Link to="/login">Giriş</Link>
+                <Link to="/register">Kayıt</Link>
               </>
             )}
           </div>
@@ -110,14 +128,8 @@ export default function App() {
         <main className="page">
           {globalError && <div className="banner-error">{globalError}</div>}
           <Routes>
-            <Route
-              path="/"
-              element={<HomePage sessionInfo={sessionInfo} />}
-            />
-            <Route
-              path="/menu"
-              element={<MenuPage />}
-            />
+            <Route path="/" element={<HomePage sessionInfo={sessionInfo} />} />
+            <Route path="/menu" element={<MenuPage />} />
             <Route
               path="/login"
               element={
@@ -133,11 +145,7 @@ export default function App() {
             <Route
               path="/register"
               element={
-                <RegisterPage
-                  registerUser={registerUser}
-                  setTokens={setTokens}
-                  setGlobalError={setGlobalError}
-                />
+                <RegisterPage registerUser={registerUser} setTokens={setTokens} setGlobalError={setGlobalError} />
               }
             />
             <Route
@@ -156,6 +164,10 @@ export default function App() {
             />
           </Routes>
         </main>
+
+        <footer className="site-footer">
+          <p>© {new Date().getFullYear()} CafeProject — Kahve, bağlantı ve kolay yönetim.</p>
+        </footer>
       </div>
     </BrowserRouter>
   );
@@ -164,28 +176,60 @@ export default function App() {
 function HomePage({ sessionInfo }) {
   return (
     <>
-      <section className="hero hero-cafe">
-        <h1>Welcome to Cafe Nova</h1>
-        <p>Smart cafe experience, powered by your backend services.</p>
+      <section className="hero hero-modern">
+        <h1>CafeProject&apos;e hoş geldiniz</h1>
+        <p>
+          Sipariş akışınızı ve müşteri deneyiminizi tek yerden yönetin. Modern arayüz, güvenli giriş ve
+          kullanıcı yönetimi backend servislerinizle bağlantılıdır.
+        </p>
+        <div className="hero-badges">
+          <span className="badge">Canlı oturum</span>
+          <span className="badge">JWT kimlik doğrulama</span>
+          <span className="badge">Ağ geçidi üzerinden API</span>
+        </div>
+        <div className="feature-strip">
+          <div className="feature-pill">
+            <h3>Taze kahve</h3>
+            <p>Çekirdekler düzenli kavrulur; menü önizlemesi burada.</p>
+          </div>
+          <div className="feature-pill">
+            <h3>Akıllı yönetim</h3>
+            <p>Sipariş ve barista panelleri ileride bu yapıya eklenebilir.</p>
+          </div>
+          <div className="feature-pill">
+            <h3>Güvenli hesap</h3>
+            <p>Kayıt ve giriş, mevcut kimlik servisinizle çalışır.</p>
+          </div>
+        </div>
       </section>
-      <section className="card">
-        <h2>Today&apos;s Highlights</h2>
+
+      <section className="card card-elevated">
+        <h2>Öne çıkanlar</h2>
         <ul className="highlights">
-          <li>Freshly roasted beans brewed every 30 minutes.</li>
-          <li>Smart barista dashboard (coming soon) to track your orders.</li>
-          <li>Secure login & user profiles already wired to your APIs.</li>
+          <li>Her 30 dakikada bir taze demleme rutini.</li>
+          <li>Sipariş takibi için barista paneli (yakında).</li>
+          <li>Giriş ve profiller API&apos;nize bağlıdır.</li>
         </ul>
       </section>
-      <section className="card">
-        <h2>Your Session</h2>
+
+      <section className="card card-elevated">
+        <h2>Oturumunuz</h2>
         {sessionInfo ? (
           <div className="session">
-            <p><strong>User:</strong> {sessionInfo.username}</p>
-            <p><strong>Role:</strong> {sessionInfo.role}</p>
-            <p><strong>User ID:</strong> {String(sessionInfo.userId)}</p>
+            <p>
+              <strong>Kullanıcı:</strong> {sessionInfo.username}
+            </p>
+            <p>
+              <strong>Rol:</strong> {sessionInfo.role}
+            </p>
+            <p>
+              <strong>Kullanıcı ID:</strong> {String(sessionInfo.userId)}
+            </p>
           </div>
         ) : (
-          <p>You are browsing as a guest. Use the navbar to log in or register.</p>
+          <p className="card-subtitle" style={{ margin: 0 }}>
+            Misafir olarak geziyorsunuz. Giriş veya kayıt için üst menüyü kullanın.
+          </p>
         )}
       </section>
     </>
@@ -195,29 +239,56 @@ function HomePage({ sessionInfo }) {
 function MenuPage() {
   return (
     <>
-      <section className="hero">
-        <h1>Our Signature Menu</h1>
-        <p>This is a static preview; ordering logic will hook into future cafe services.</p>
+      <section className="hero hero-modern">
+        <h1>İmza menümüz</h1>
+        <p>Örnek fiyatlar ve açıklamalar; sipariş entegrasyonu ileride eklenecek.</p>
       </section>
-      <section className="card menu-grid">
-        <MenuItem name="Espresso" description="Rich, intense, perfectly extracted." price="€2.50" />
-        <MenuItem name="Cappuccino" description="Silky foam and double shot espresso." price="€3.40" />
-        <MenuItem name="Cold Brew" description="Slow-brewed, smooth and refreshing." price="€3.80" />
-        <MenuItem name="Matcha Latte" description="Creamy green tea with microfoam." price="€3.90" />
+      <section className="menu-grid">
+        <MenuCard
+          emoji="☕"
+          name="Espresso"
+          description="Yoğun gövde, dengeli ekstraksiyon."
+          price="85 ₺"
+        />
+        <MenuCard
+          emoji="🥛"
+          name="Cappuccino"
+          description="İki shot espresso ve ipeksi süt köpüğü."
+          price="110 ₺"
+        />
+        <MenuCard
+          emoji="🧊"
+          name="Cold Brew"
+          description="Soğuk demleme, yumuşak ve ferahlatıcı."
+          price="120 ₺"
+        />
+        <MenuCard
+          emoji="🍵"
+          name="Matcha Latte"
+          description="Kremalı yeşil çay ve mikroköpük."
+          price="125 ₺"
+        />
       </section>
     </>
   );
 }
 
-function MenuItem({ name, description, price }) {
+function MenuCard({ emoji, name, description, price }) {
   return (
-    <div className="menu-item">
-      <div>
-        <h3>{name}</h3>
-        <p>{description}</p>
+    <article className="menu-card">
+      <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+        <span className="menu-emoji" aria-hidden>
+          {emoji}
+        </span>
+        <div>
+          <h3>{name}</h3>
+          <p>{description}</p>
+        </div>
       </div>
-      <span className="price">{price}</span>
-    </div>
+      <div className="menu-card-footer">
+        <span className="price">{price}</span>
+      </div>
+    </article>
   );
 }
 
@@ -235,7 +306,7 @@ function LoginPage({ loginUser, refreshTokenApi, setTokens, refreshTokenValue, s
     try {
       await action();
     } catch (err) {
-      const msg = err.message || "Unexpected error";
+      const msg = hataMesaji(err);
       setError(msg);
       setGlobalError(msg);
     } finally {
@@ -245,11 +316,11 @@ function LoginPage({ loginUser, refreshTokenApi, setTokens, refreshTokenValue, s
 
   return (
     <>
-      <section className="hero">
-        <h1>Login</h1>
-        <p>Access your smart cafe account.</p>
+      <section className="hero hero-modern">
+        <h1>Giriş</h1>
+        <p>CafeProject hesabınızla oturum açın.</p>
       </section>
-      <section className="card">
+      <section className="card card-elevated">
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -260,12 +331,27 @@ function LoginPage({ loginUser, refreshTokenApi, setTokens, refreshTokenValue, s
             });
           }}
         >
-          <Input label="Username" value={loginForm.username} onChange={(v) => setLoginForm((s) => ({ ...s, username: v }))} required />
-          <Input label="Password" type="password" value={loginForm.password} onChange={(v) => setLoginForm((s) => ({ ...s, password: v }))} required />
-          <button disabled={loading} type="submit">Login</button>
+          <Input
+            label="Kullanıcı adı"
+            value={loginForm.username}
+            onChange={(v) => setLoginForm((s) => ({ ...s, username: v }))}
+            required
+          />
+          <Input
+            label="Şifre"
+            type="password"
+            value={loginForm.password}
+            onChange={(v) => setLoginForm((s) => ({ ...s, password: v }))}
+            required
+          />
+          <button disabled={loading} type="submit">
+            Giriş yap
+          </button>
         </form>
         <button
+          type="button"
           className="secondary"
+          style={{ marginTop: 12 }}
           disabled={!refreshTokenValue || loading}
           onClick={() =>
             run(async () => {
@@ -275,12 +361,16 @@ function LoginPage({ loginUser, refreshTokenApi, setTokens, refreshTokenValue, s
             })
           }
         >
-          Refresh Access Token
+          Erişim jetonunu yenile
         </button>
       </section>
-      <section className="card">
-        <h2>Result</h2>
-        {error ? <pre className="error">{error}</pre> : <pre>{JSON.stringify(result, null, 2) || "No result yet."}</pre>}
+      <section className="card card-elevated">
+        <h2>Sonuç</h2>
+        {error ? (
+          <pre className="error">{error}</pre>
+        ) : (
+          <pre>{result != null ? JSON.stringify(result, null, 2) : <span className="empty-result">Henüz sonuç yok.</span>}</pre>
+        )}
       </section>
     </>
   );
@@ -300,7 +390,7 @@ function RegisterPage({ registerUser, setTokens, setGlobalError }) {
     try {
       await action();
     } catch (err) {
-      const msg = err.message || "Unexpected error";
+      const msg = hataMesaji(err);
       setError(msg);
       setGlobalError(msg);
     } finally {
@@ -310,11 +400,11 @@ function RegisterPage({ registerUser, setTokens, setGlobalError }) {
 
   return (
     <>
-      <section className="hero">
-        <h1>Create an account</h1>
-        <p>Sign up to start using the smart cafe platform.</p>
+      <section className="hero hero-modern">
+        <h1>Hesap oluştur</h1>
+        <p>CafeProject platformuna kayıt olun.</p>
       </section>
-      <section className="card">
+      <section className="card card-elevated">
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -328,19 +418,47 @@ function RegisterPage({ registerUser, setTokens, setGlobalError }) {
             });
           }}
         >
-          <Input label="Type" value={registerForm.type} onChange={(v) => setRegisterForm((s) => ({ ...s, type: v }))} />
-          <Input label="Username" value={registerForm.username} onChange={(v) => setRegisterForm((s) => ({ ...s, username: v }))} required />
-          <Input label="Password" type="password" value={registerForm.password} onChange={(v) => setRegisterForm((s) => ({ ...s, password: v }))} required />
-          <Input label="First Name" value={registerForm.firstName} onChange={(v) => setRegisterForm((s) => ({ ...s, firstName: v }))} />
-          <Input label="Last Name" value={registerForm.lastName} onChange={(v) => setRegisterForm((s) => ({ ...s, lastName: v }))} />
-          <Input label="Email" type="email" value={registerForm.emailAddress} onChange={(v) => setRegisterForm((s) => ({ ...s, emailAddress: v }))} required />
-          <Input label="Role (USER/ADMIN)" value={registerForm.roleName} onChange={(v) => setRegisterForm((s) => ({ ...s, roleName: v }))} required />
-          <button disabled={loading} type="submit">Register</button>
+          <Input label="Tip" value={registerForm.type} onChange={(v) => setRegisterForm((s) => ({ ...s, type: v }))} />
+          <Input
+            label="Kullanıcı adı"
+            value={registerForm.username}
+            onChange={(v) => setRegisterForm((s) => ({ ...s, username: v }))}
+            required
+          />
+          <Input
+            label="Şifre"
+            type="password"
+            value={registerForm.password}
+            onChange={(v) => setRegisterForm((s) => ({ ...s, password: v }))}
+            required
+          />
+          <Input label="Ad" value={registerForm.firstName} onChange={(v) => setRegisterForm((s) => ({ ...s, firstName: v }))} />
+          <Input label="Soyad" value={registerForm.lastName} onChange={(v) => setRegisterForm((s) => ({ ...s, lastName: v }))} />
+          <Input
+            label="E-posta"
+            type="email"
+            value={registerForm.emailAddress}
+            onChange={(v) => setRegisterForm((s) => ({ ...s, emailAddress: v }))}
+            required
+          />
+          <Input
+            label="Rol (USER / ADMIN)"
+            value={registerForm.roleName}
+            onChange={(v) => setRegisterForm((s) => ({ ...s, roleName: v }))}
+            required
+          />
+          <button disabled={loading} type="submit">
+            Kayıt ol
+          </button>
         </form>
       </section>
-      <section className="card">
-        <h2>Result</h2>
-        {error ? <pre className="error">{error}</pre> : <pre>{JSON.stringify(result, null, 2) || "No result yet."}</pre>}
+      <section className="card card-elevated">
+        <h2>Sonuç</h2>
+        {error ? (
+          <pre className="error">{error}</pre>
+        ) : (
+          <pre>{result != null ? JSON.stringify(result, null, 2) : <span className="empty-result">Henüz sonuç yok.</span>}</pre>
+        )}
       </section>
     </>
   );
@@ -371,7 +489,7 @@ function UsersPage({
     try {
       await action();
     } catch (err) {
-      const msg = err.message || "Unexpected error";
+      const msg = hataMesaji(err);
       setError(msg);
       setGlobalError(msg);
     } finally {
@@ -381,21 +499,24 @@ function UsersPage({
 
   return (
     <>
-      <section className="hero">
-        <h1>User Management</h1>
-        <p>These actions are wired to `user-service` APIs via the gateway.</p>
+      <section className="hero hero-modern">
+        <h1>Kullanıcı yönetimi</h1>
+        <p>İşlemler ağ geçidi üzerinden kullanıcı servisine bağlanır.</p>
       </section>
 
-      <section className="card">
-        <p>Requires a valid access token from login/register.</p>
+      <section className="card card-elevated">
+        <p className="card-subtitle" style={{ marginTop: 0 }}>
+          Geçerli bir erişim jetonu gerekir (giriş veya kayıt sonrası).
+        </p>
         <div className="actions-row">
           <Input
-            label="Get User By ID"
+            label="Kullanıcı ID ile getir"
             value={userIdQuery}
             onChange={setUserIdQuery}
-            placeholder="e.g. 1"
+            placeholder="örn. 1"
           />
           <button
+            type="button"
             disabled={!accessToken || !userIdQuery || loading}
             onClick={() =>
               run(async () => {
@@ -404,7 +525,7 @@ function UsersPage({
               })
             }
           >
-            Fetch User
+            Getir
           </button>
         </div>
 
@@ -424,23 +545,47 @@ function UsersPage({
           }}
         >
           <div className="grid fields">
-            <Input label="ID (for update only)" value={userPayload.id} onChange={(v) => setUserPayload((s) => ({ ...s, id: v }))} />
-            <Input label="Status" value={userPayload.status} onChange={(v) => setUserPayload((s) => ({ ...s, status: v }))} />
-            <Input label="Type" value={userPayload.type} onChange={(v) => setUserPayload((s) => ({ ...s, type: v }))} />
-            <Input label="Username" value={userPayload.username} onChange={(v) => setUserPayload((s) => ({ ...s, username: v }))} required />
-            <Input label="Password" type="password" value={userPayload.password} onChange={(v) => setUserPayload((s) => ({ ...s, password: v }))} required />
-            <Input label="First Name" value={userPayload.firstName} onChange={(v) => setUserPayload((s) => ({ ...s, firstName: v }))} />
-            <Input label="Last Name" value={userPayload.lastName} onChange={(v) => setUserPayload((s) => ({ ...s, lastName: v }))} />
-            <Input label="Email" type="email" value={userPayload.emailAddress} onChange={(v) => setUserPayload((s) => ({ ...s, emailAddress: v }))} required />
-            <Input label="Role (USER/ADMIN)" value={userPayload.roleName} onChange={(v) => setUserPayload((s) => ({ ...s, roleName: v }))} required />
+            <Input label="ID (yalnızca güncelleme)" value={userPayload.id} onChange={(v) => setUserPayload((s) => ({ ...s, id: v }))} />
+            <Input label="Durum" value={userPayload.status} onChange={(v) => setUserPayload((s) => ({ ...s, status: v }))} />
+            <Input label="Tip" value={userPayload.type} onChange={(v) => setUserPayload((s) => ({ ...s, type: v }))} />
+            <Input
+              label="Kullanıcı adı"
+              value={userPayload.username}
+              onChange={(v) => setUserPayload((s) => ({ ...s, username: v }))}
+              required
+            />
+            <Input
+              label="Şifre"
+              type="password"
+              value={userPayload.password}
+              onChange={(v) => setUserPayload((s) => ({ ...s, password: v }))}
+              required
+            />
+            <Input label="Ad" value={userPayload.firstName} onChange={(v) => setUserPayload((s) => ({ ...s, firstName: v }))} />
+            <Input label="Soyad" value={userPayload.lastName} onChange={(v) => setUserPayload((s) => ({ ...s, lastName: v }))} />
+            <Input
+              label="E-posta"
+              type="email"
+              value={userPayload.emailAddress}
+              onChange={(v) => setUserPayload((s) => ({ ...s, emailAddress: v }))}
+              required
+            />
+            <Input
+              label="Rol (USER / ADMIN)"
+              value={userPayload.roleName}
+              onChange={(v) => setUserPayload((s) => ({ ...s, roleName: v }))}
+              required
+            />
           </div>
 
           <div className="button-row">
-            <button disabled={!accessToken || loading} type="submit">Create User</button>
+            <button disabled={!accessToken || loading} type="submit">
+              Kullanıcı oluştur
+            </button>
             <button
+              type="button"
               className="secondary"
               disabled={!accessToken || !userPayload.id || loading}
-              type="button"
               onClick={() =>
                 run(async () => {
                   const payload = {
@@ -454,28 +599,32 @@ function UsersPage({
                 })
               }
             >
-              Update User
+              Güncelle
             </button>
             <button
+              type="button"
               className="danger"
               disabled={!accessToken || !userPayload.id || !isAdmin || loading}
-              type="button"
               onClick={() =>
                 run(async () => {
                   const response = await deleteUser(Number(userPayload.id), accessToken);
-                  setResult(response || { message: "Deleted" });
+                  setResult(response || { mesaj: "Silindi" });
                 })
               }
             >
-              Delete User (ADMIN)
+              Sil (yalnızca ADMIN)
             </button>
           </div>
         </form>
       </section>
 
-      <section className="card">
-        <h2>Result</h2>
-        {error ? <pre className="error">{error}</pre> : <pre>{JSON.stringify(result, null, 2) || "No result yet."}</pre>}
+      <section className="card card-elevated">
+        <h2>Sonuç</h2>
+        {error ? (
+          <pre className="error">{error}</pre>
+        ) : (
+          <pre>{result != null ? JSON.stringify(result, null, 2) : <span className="empty-result">Henüz sonuç yok.</span>}</pre>
+        )}
       </section>
     </>
   );

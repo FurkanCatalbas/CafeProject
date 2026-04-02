@@ -16,7 +16,11 @@ async function request(path, options = {}) {
   }
 
   if (!response.ok) {
-    const message = data?.message || `Request failed with ${response.status}`;
+    const message =
+      data?.message ||
+      data?.error ||
+      (data ? JSON.stringify(data) : "") ||
+      `Request failed with ${response.status}`;
     throw new Error(message);
   }
 
