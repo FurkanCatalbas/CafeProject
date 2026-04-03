@@ -1,6 +1,0 @@
----
-alwaysApply: true
----
-
-Do not modify anything in .idea, backend and logs folders.
-Keep the code modular and aim for smaller modules/files.
