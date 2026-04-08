@@ -60,8 +60,7 @@ spring:
               - RemoveRequestHeader=Cookie
               - AuthenticationFilter
             metadata:
-                # İstek yolu gateway üzerinden /user-service/api/users/... olduğu için desen buna göre olmalı
-                authorizedRoles.DELETE./user-service/api/users/**: "ADMIN"
+                authorizedRoles.DELETE./api/users/**: "ADMIN"
 
 # Application Security Configuration
 application:

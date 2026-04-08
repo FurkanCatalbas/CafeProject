@@ -10,6 +10,7 @@ import com.authservice.repositorys.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -21,24 +22,13 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
-
-    public UserServiceImpl(
-            UserRepository userRepository,
-            PasswordEncoder passwordEncoder,
-            JwtService jwtService,
-            AuthenticationManager authenticationManager
-    ) {
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
-        this.jwtService = jwtService;
-        this.authenticationManager = authenticationManager;
-    }
 
     @Override
     public TokenResponse register(UserDto userDto) {
@@ -48,12 +38,8 @@ public class UserServiceImpl implements UserService {
         UserEntity userEntity = toEntity(userDto);
         userEntity.setEmailAddress(userDto.getEmailAddress());
         userEntity = userRepository.save(userEntity);
-        UserDto tokenDto = toDto(userEntity);
-        if (tokenDto.getId() == null && userEntity.getId() != null) {
-            tokenDto.setId(userEntity.getId());
-        }
-        var jwtToken = jwtService.generateToken(tokenDto);
-        var refreshToken = jwtService.generateRefreshToken(tokenDto);
+        var jwtToken = jwtService.generateToken(toDto(userEntity));
+        var refreshToken = jwtService.generateRefreshToken(toDto(userEntity));
 
 
 
@@ -113,11 +99,11 @@ public class UserServiceImpl implements UserService {
     }
 
     private UserDto toDto(UserEntity entity) {
-        return UserMapper.toDto(entity);
+        return UserMapper.INSTANCE.toDto(entity);
     }
 
     private UserEntity toEntity(UserDto dto) {
-        return UserMapper.toEntity(dto);
+        return UserMapper.INSTANCE.toEntity(dto);
     }
 
     private List<UserDto> toDtos(List<UserEntity> entities) {

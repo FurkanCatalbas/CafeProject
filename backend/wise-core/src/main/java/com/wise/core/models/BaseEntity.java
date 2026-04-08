@@ -39,19 +39,11 @@ public abstract class BaseEntity implements Cloneable, Serializable {
     @Column(name = "UPDATESEQ", columnDefinition = "smallint")
     private Integer updateseq;
 
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
     @PrePersist
     protected void preInsert() {
-        this.updateseq = 0;
-        this.createDate = LocalDateTime.now();
-        this.uuid = UUID.randomUUID();
+        this.setUpdateseq(0);
+        this.setCreateDate(LocalDateTime.now());
+        this.setUuid(UUID.randomUUID());
     }
 
     @Override

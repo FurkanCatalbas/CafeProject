@@ -45,8 +45,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter implements Fil
             String authorizationHeader = request.getHeader("Authorization");
 
             if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
-                filterChain.doFilter(request, response);
-                return;
+                System.out.println("Authorization header not found");
             }
 
             String token = authorizationHeader.substring(7);

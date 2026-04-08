@@ -15,10 +15,9 @@ public class BaseResponse extends CoreDto {
     UIMessage uiMessage = null;
 
     public void setOutcome(OutcomeType type, String text) {
-        this.outcomeType = type;
+        setOutcomeType(type);
         UIMessage ui = new UIMessage();
         ui.setText(text);
-        this.uiMessage = ui;
     }
 
     public UIMessage getUIMessage() {

@@ -18,13 +18,10 @@ import java.io.IOException;
 
 @RestController
 @RequestMapping( "/api/auth")
+@RequiredArgsConstructor
 public class UserController {
 
     private final UserService userService;
-
-    public UserController(UserService userService) {
-        this.userService = userService;
-    }
 
     @PostMapping("/register")
     public ResponseEntity<TokenResponse> register(@RequestBody UserDto userDto) {

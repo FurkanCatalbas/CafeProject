@@ -8,12 +8,4 @@ import java.io.Serializable;
 @Setter
 public class QueryResponse<T extends Serializable> extends BaseQueryResponse {
     T data;
-
-    public T getData() {
-        return data;
-    }
-
-    public void setData(T data) {
-        this.data = data;
-    }
 }
