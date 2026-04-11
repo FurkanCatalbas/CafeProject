@@ -21,7 +21,8 @@ public abstract class BaseEntity implements Cloneable, Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(name = "UUID", updatable = false, columnDefinition = "uuid")
+    //uuid kullanılan sql e göre farklılık gösterebiliyor bu bi dursun bakalım
+    @Column(name = "UUID", updatable = false, columnDefinition = "uuid"/* , columnDefinition = "uniqueidentifier"*/)
     private UUID uuid;
 
     @Column(name = "CREATE_DATE")
