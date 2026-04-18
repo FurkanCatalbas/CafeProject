@@ -2,6 +2,7 @@ package com.userservice.models;
 
 
 import com.userservice.enums.RecordStatusType;
+import com.wise.core.models.BaseDto;
 import org.apache.commons.lang3.ObjectUtils;
 
 import java.time.LocalDateTime;

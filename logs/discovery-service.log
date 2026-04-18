@@ -3078,3 +3078,124 @@ Caused by: java.lang.ClassNotFoundException: org.springframework.boot.thread.Thr
 2026-03-26 23:25:45 INFO Shut down
 2026-03-26 23:25:45 INFO Shutting down DiscoveryClient ...
 2026-03-26 23:25:45 INFO Completed shut down of DiscoveryClient
+2026-04-12 23:43:46 INFO Starting DiscoveryServiceApplication using Java 21.0.8 with PID 10236 (C:\Users\FURKAN\Documents\GitHub\CafeProject\backend\discovery-service\target\classes started by FURKAN in C:\Users\FURKAN\Documents\GitHub\CafeProject)
+2026-04-12 23:43:46 INFO No active profile set, falling back to 1 default profile: "default"
+2026-04-12 23:43:47 INFO BeanFactory id=0c987430-a260-3d13-a8ae-b182c809561c
+2026-04-12 23:43:47 INFO Tomcat initialized with port 10100 (http)
+2026-04-12 23:43:47 INFO Initializing ProtocolHandler ["http-nio-10100"]
+2026-04-12 23:43:47 INFO Starting service [Tomcat]
+2026-04-12 23:43:47 INFO Starting Servlet engine: [Apache Tomcat/10.1.33]
+2026-04-12 23:43:47 INFO Initializing Spring embedded WebApplicationContext
+2026-04-12 23:43:47 INFO Root WebApplicationContext: initialization completed in 979 ms
+2026-04-12 23:43:48 INFO Using JSON encoding codec LegacyJacksonJson
+2026-04-12 23:43:48 INFO Using JSON decoding codec LegacyJacksonJson
+2026-04-12 23:43:48 INFO Using XML encoding codec XStreamXml
+2026-04-12 23:43:48 INFO Using XML decoding codec XStreamXml
+2026-04-12 23:43:49 INFO Cannot determine local hostname
+2026-04-12 23:43:51 INFO Cannot determine local hostname
+2026-04-12 23:43:51 WARN Spring Cloud LoadBalancer is currently working with the default cache. While this cache implementation is useful for development and tests, it's recommended to use Caffeine cache in production.You can switch to using Caffeine cache, by adding it and org.springframework.cache.caffeine.CaffeineCacheManager to the classpath.
+2026-04-12 23:43:51 INFO Setting initial instance status as: STARTING
+2026-04-12 23:43:51 INFO Initializing Eureka in region us-east-1
+2026-04-12 23:43:51 INFO Client configured to neither register nor query for data.
+2026-04-12 23:43:51 INFO Discovery Client initialized at timestamp 1776026631168 with initial instances count: 0
+2026-04-12 23:43:51 INFO Initializing ...
+2026-04-12 23:43:51 WARN The replica size seems to be empty. Check the route 53 DNS Registry
+2026-04-12 23:43:51 INFO Finished initializing remote region registries. All known remote regions: []
+2026-04-12 23:43:51 INFO Initialized
+2026-04-12 23:43:51 INFO Exposing 1 endpoint beneath base path '/actuator'
+2026-04-12 23:43:51 INFO Registering application DISCOVERY-SERVICE with eureka with status UP
+2026-04-12 23:43:51 INFO Starting ProtocolHandler ["http-nio-10100"]
+2026-04-12 23:43:51 INFO isAws returned false
+2026-04-12 23:43:51 INFO Initialized server context
+2026-04-12 23:43:51 INFO Got 1 instances from neighboring DS node
+2026-04-12 23:43:51 INFO Renew threshold is: 1
+2026-04-12 23:43:51 INFO Changing status to UP
+2026-04-12 23:43:51 INFO Started Eureka Server
+2026-04-12 23:43:51 INFO Tomcat started on port 10100 (http) with context path '/'
+2026-04-12 23:43:51 INFO Updating port to 10100
+2026-04-12 23:43:52 INFO Cannot determine local hostname
+2026-04-12 23:43:52 INFO Started DiscoveryServiceApplication in 6.924 seconds (process running for 7.904)
+2026-04-12 23:43:52 INFO Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-04-12 23:43:52 INFO Initializing Servlet 'dispatcherServlet'
+2026-04-12 23:43:52 INFO Completed initialization in 2 ms
+2026-04-12 23:44:15 INFO Registered instance AUTH-SERVICE/localhost:auth-service:10109 with status UP (replication=false)
+2026-04-12 23:44:15 INFO Registered instance AUTH-SERVICE/localhost:auth-service:10109 with status DOWN (replication=false)
+2026-04-12 23:44:18 INFO Cancelled instance AUTH-SERVICE/localhost:auth-service:10109 (replication=false)
+2026-04-12 23:44:27 INFO Registered instance AUTH-SERVICE/localhost:auth-service:10109 with status UP (replication=false)
+2026-04-12 23:44:51 INFO Running the evict task with compensationTime 0ms
+2026-04-12 23:44:57 INFO Registered instance USER-SERVICE/localhost:user-service with status UP (replication=false)
+2026-04-12 23:45:51 INFO Running the evict task with compensationTime 0ms
+2026-04-12 23:46:51 INFO Running the evict task with compensationTime 7ms
+2026-04-12 23:47:51 INFO Running the evict task with compensationTime 5ms
+2026-04-12 23:48:25 INFO Registered instance USER-SERVICE/localhost:user-service with status DOWN (replication=false)
+2026-04-12 23:48:51 INFO Running the evict task with compensationTime 1ms
+2026-04-12 23:49:51 INFO Running the evict task with compensationTime 0ms
+2026-04-12 23:50:26 INFO Registered instance USER-SERVICE/localhost:user-service with status UP (replication=false)
+2026-04-12 23:50:51 INFO Running the evict task with compensationTime 6ms
+2026-04-12 23:51:51 INFO Running the evict task with compensationTime 1ms
+2026-04-12 23:52:51 INFO Running the evict task with compensationTime 9ms
+2026-04-12 23:53:51 WARN The replica size seems to be empty. Check the route 53 DNS Registry
+2026-04-12 23:53:51 INFO Running the evict task with compensationTime 0ms
+2026-04-12 23:54:28 INFO Registered instance GATEWAY-SERVICE/localhost:gateway-service:10101 with status UP (replication=false)
+2026-04-12 23:54:51 INFO Running the evict task with compensationTime 0ms
+2026-04-12 23:55:51 INFO Running the evict task with compensationTime 0ms
+2026-04-12 23:56:51 INFO Running the evict task with compensationTime 6ms
+2026-04-12 23:57:51 INFO Running the evict task with compensationTime 8ms
+2026-04-12 23:58:51 INFO Current renewal threshold is : 6
+2026-04-12 23:58:51 INFO Running the evict task with compensationTime 0ms
+2026-04-12 23:59:51 INFO Running the evict task with compensationTime 0ms
+2026-04-13 00:00:51 INFO Running the evict task with compensationTime 0ms
+2026-04-13 00:01:51 INFO Running the evict task with compensationTime 0ms
+2026-04-13 00:02:51 INFO Running the evict task with compensationTime 0ms
+2026-04-13 00:03:51 WARN The replica size seems to be empty. Check the route 53 DNS Registry
+2026-04-13 00:03:51 INFO Running the evict task with compensationTime 1ms
+2026-04-13 00:04:51 INFO Running the evict task with compensationTime 0ms
+2026-04-13 00:05:51 INFO Running the evict task with compensationTime 0ms
+2026-04-13 00:06:51 INFO Running the evict task with compensationTime 0ms
+2026-04-13 00:07:51 INFO Running the evict task with compensationTime 0ms
+2026-04-13 00:08:51 INFO Running the evict task with compensationTime 0ms
+2026-04-13 00:09:51 INFO Running the evict task with compensationTime 0ms
+2026-04-13 00:10:51 INFO Running the evict task with compensationTime 0ms
+2026-04-13 00:11:51 INFO Running the evict task with compensationTime 0ms
+2026-04-13 00:12:51 INFO Running the evict task with compensationTime 0ms
+2026-04-13 00:13:51 INFO Current renewal threshold is : 6
+2026-04-13 00:13:51 WARN The replica size seems to be empty. Check the route 53 DNS Registry
+2026-04-13 00:13:51 INFO Running the evict task with compensationTime 0ms
+2026-04-13 00:14:51 INFO Running the evict task with compensationTime 1ms
+2026-04-13 00:15:51 INFO Running the evict task with compensationTime 1ms
+2026-04-13 00:16:51 INFO Running the evict task with compensationTime 10ms
+2026-04-13 00:17:51 INFO Running the evict task with compensationTime 2ms
+2026-04-13 00:18:51 INFO Running the evict task with compensationTime 4ms
+2026-04-13 00:19:51 INFO Running the evict task with compensationTime 5ms
+2026-04-13 00:20:35 INFO Registered instance AUTH-SERVICE/localhost:auth-service:10109 with status DOWN (replication=false)
+2026-04-13 00:20:35 INFO Cancelled instance AUTH-SERVICE/localhost:auth-service:10109 (replication=false)
+2026-04-13 00:20:47 INFO Registered instance AUTH-SERVICE/localhost:auth-service:10109 with status UP (replication=false)
+2026-04-13 00:20:47 INFO Registered instance AUTH-SERVICE/localhost:auth-service:10109 with status DOWN (replication=false)
+2026-04-13 00:20:50 INFO Cancelled instance AUTH-SERVICE/localhost:auth-service:10109 (replication=false)
+2026-04-13 00:20:51 INFO Running the evict task with compensationTime 7ms
+2026-04-13 00:20:59 INFO Registered instance AUTH-SERVICE/localhost:auth-service:10109 with status UP (replication=false)
+2026-04-13 00:21:51 INFO Running the evict task with compensationTime 13ms
+2026-04-13 00:22:51 INFO Running the evict task with compensationTime 3ms
+2026-04-13 00:23:51 WARN The replica size seems to be empty. Check the route 53 DNS Registry
+2026-04-13 00:23:51 INFO Running the evict task with compensationTime 11ms
+2026-04-13 00:24:51 INFO Running the evict task with compensationTime 11ms
+2026-04-13 00:25:51 INFO Running the evict task with compensationTime 0ms
+2026-04-13 00:26:51 INFO Running the evict task with compensationTime 0ms
+2026-04-13 00:27:41 INFO Registered instance GATEWAY-SERVICE/localhost:gateway-service:10101 with status DOWN (replication=false)
+2026-04-13 00:27:46 INFO Cancelled instance GATEWAY-SERVICE/localhost:gateway-service:10101 (replication=false)
+2026-04-13 00:27:51 INFO Running the evict task with compensationTime 5ms
+2026-04-13 00:27:58 INFO Registered instance GATEWAY-SERVICE/localhost:gateway-service:10101 with status UP (replication=false)
+2026-04-13 00:28:49 INFO Registered instance AUTH-SERVICE/localhost:auth-service:10109 with status DOWN (replication=false)
+2026-04-13 00:28:49 INFO Unregistering application DISCOVERY-SERVICE with eureka with status DOWN
+2026-04-13 00:28:49 INFO Registered instance USER-SERVICE/localhost:user-service with status DOWN (replication=false)
+2026-04-13 00:28:49 INFO Registered instance GATEWAY-SERVICE/localhost:gateway-service:10101 with status DOWN (replication=false)
+2026-04-13 00:28:49 INFO Commencing graceful shutdown. Waiting for active requests to complete
+2026-04-13 00:28:49 INFO Graceful shutdown complete
+2026-04-13 00:28:49 INFO Shutting down Eureka Server..
+2026-04-13 00:28:49 INFO Shutting down ...
+2026-04-13 00:28:49 INFO Shut down
+2026-04-13 00:28:49 INFO Eureka Service is now shutdown...
+2026-04-13 00:28:49 INFO Shutting down ...
+2026-04-13 00:28:49 INFO Shut down
+2026-04-13 00:28:49 INFO Shutting down DiscoveryClient ...
+2026-04-13 00:28:49 INFO Completed shut down of DiscoveryClient

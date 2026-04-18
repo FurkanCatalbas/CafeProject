@@ -12,6 +12,5 @@ com\wise\core\enums\RecordStatusType.class
 com\wise\core\security\RoleInterceptor.class
 com\wise\core\models\BaseQueryResponse.class
 com\wise\core\models\BaseResponse.class
-com\wise\core\config\WebMvcConfig.class
 com\wise\core\enums\OutcomeType.class
 com\wise\core\models\QueryResponse.class

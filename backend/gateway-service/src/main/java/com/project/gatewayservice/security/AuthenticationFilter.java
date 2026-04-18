@@ -55,13 +55,13 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
             }
 
             String token = authHeader.substring(7);
-            String username;
+            String userId;
             String role;
 
             try {
-                username = jwtService.extractUsername(token);
+                userId = jwtService.extractUserId(token);
                 role = jwtService.extractRole(token);
-                if (!jwtService.isTokenValid(token, username)) {
+                if (!jwtService.isTokenValid(token, jwtService.extractUsername(token))) {
                     return onError(exchange, "ERR-003: Token geçersiz", HttpStatus.FORBIDDEN);
                 }
             } catch (Exception e) {
@@ -103,7 +103,7 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
 
             // 4. Başarılı ise isteği servise ilet (Header'ları zenginleştirerek)
             ServerHttpRequest mutatedRequest = request.mutate()
-                    .header("X-User-Id", username)
+                    .header("X-User-Id", userId != null ? userId : "0")
                     .header("X-User-Role", role != null ? role : "USER")
                     .build();
 

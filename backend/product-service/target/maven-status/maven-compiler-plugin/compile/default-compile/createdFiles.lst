@@ -1,0 +1,12 @@
+com\productservice\controllers\ProductController.class
+com\productservice\ProductServiceApplication.class
+com\productservice\models\OrderCreatedEvent.class
+com\productservice\repository\ProductsRepository.class
+com\productservice\mappers\ProductMapper.class
+com\productservice\services\ProductsServiceImpl.class
+com\productservice\models\ProductEntity.class
+com\productservice\services\ProductsService.class
+com\productservice\models\ProductDto.class
+com\productservice\models\OrderItemEventDto.class
+com\productservice\mappers\ProductMapperImpl.class
+com\productservice\kafka\OrderEventConsumer.class

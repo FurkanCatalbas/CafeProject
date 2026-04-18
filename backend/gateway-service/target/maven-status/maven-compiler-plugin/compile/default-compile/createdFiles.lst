@@ -1,5 +1,0 @@
-com/wiseretail/gatewayservice/security/AuthenticationFilter.class
-com/wiseretail/gatewayservice/GatewayServiceApplication.class
-com/wiseretail/gatewayservice/security/AuthenticationFilter$Config.class
-com/wiseretail/gatewayservice/security/RouteValidator.class
-com/wiseretail/gatewayservice/security/JwtService.class

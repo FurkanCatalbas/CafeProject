@@ -54,13 +54,35 @@ spring:
           - id: user-service
             uri: lb://user-service
             predicates:
-              - Path=/user-service/**   # Postman URL ile eşleşmeli
+              - Path=/user-service/**
             filters:
-              - StripPrefix=1           # user-service/** kısmını kaldır, servise /api/users/14 geçsin
+              - StripPrefix=1
               - RemoveRequestHeader=Cookie
               - AuthenticationFilter
             metadata:
                 authorizedRoles.DELETE./api/users/**: "ADMIN"
+
+          - id: product-service
+            uri: lb://product-service
+            predicates:
+              - Path=/product-service/**
+            filters:
+              - StripPrefix=1
+              - RemoveRequestHeader=Cookie
+              - AuthenticationFilter
+            metadata:
+                authorizedRoles.DELETE./api/products/**: "ADMIN"
+
+          - id: order-service
+            uri: lb://order-service
+            predicates:
+              - Path=/order-service/**
+            filters:
+              - StripPrefix=1
+              - RemoveRequestHeader=Cookie
+              - AuthenticationFilter
+            metadata:
+                authorizedRoles.DELETE./api/orders/**: "ADMIN"
 
 # Application Security Configuration
 application:

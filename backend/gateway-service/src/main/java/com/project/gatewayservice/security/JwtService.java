@@ -28,6 +28,12 @@ public class JwtService {
     return extractClaim(token, Claims::getSubject);
   }
 
+  public String extractUserId(String token) {
+    Claims claims = extractAllClaims(token);
+    Map<String, Object> userObject = (Map<String, Object>) claims.get("userObject");
+    return userObject == null ? null : String.valueOf(userObject.get("userId"));
+  }
+
   public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
     final Claims claims = extractAllClaims(token);
     return claimsResolver.apply(claims);
@@ -49,7 +55,7 @@ public class JwtService {
   public String extractRole(String token) {
     Claims claims = extractAllClaims(token);
     Map<String, Object> userObject = (Map<String, Object>) claims.get("userObject");
-    return (String) userObject.get("role");
+    return userObject == null ? null : (String) userObject.get("role");
   }
 
   private Claims extractAllClaims(String token) {

@@ -1,5 +1,6 @@
 package com.userservice.models;
 
+import com.wise.core.models.BaseQueryResponse;
 import lombok.Getter;
 import lombok.Setter;
 

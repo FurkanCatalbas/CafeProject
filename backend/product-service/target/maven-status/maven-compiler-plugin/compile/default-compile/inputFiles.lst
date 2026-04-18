@@ -1,0 +1,11 @@
+C:\Users\FURKAN\Documents\GitHub\CafeProject\backend\product-service\src\main\java\com\productservice\models\OrderItemEventDto.java
+C:\Users\FURKAN\Documents\GitHub\CafeProject\backend\product-service\src\main\java\com\productservice\kafka\OrderEventConsumer.java
+C:\Users\FURKAN\Documents\GitHub\CafeProject\backend\product-service\src\main\java\com\productservice\repository\ProductsRepository.java
+C:\Users\FURKAN\Documents\GitHub\CafeProject\backend\product-service\src\main\java\com\productservice\models\ProductDto.java
+C:\Users\FURKAN\Documents\GitHub\CafeProject\backend\product-service\src\main\java\com\productservice\services\ProductsService.java
+C:\Users\FURKAN\Documents\GitHub\CafeProject\backend\product-service\src\main\java\com\productservice\services\ProductsServiceImpl.java
+C:\Users\FURKAN\Documents\GitHub\CafeProject\backend\product-service\src\main\java\com\productservice\mappers\ProductMapper.java
+C:\Users\FURKAN\Documents\GitHub\CafeProject\backend\product-service\src\main\java\com\productservice\ProductServiceApplication.java
+C:\Users\FURKAN\Documents\GitHub\CafeProject\backend\product-service\src\main\java\com\productservice\models\ProductEntity.java
+C:\Users\FURKAN\Documents\GitHub\CafeProject\backend\product-service\src\main\java\com\productservice\controllers\ProductController.java
+C:\Users\FURKAN\Documents\GitHub\CafeProject\backend\product-service\src\main\java\com\productservice\models\OrderCreatedEvent.java
