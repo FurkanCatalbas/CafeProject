@@ -1,7 +1,8 @@
 package com.userservice.controllers;
 
 
-import com.wise.core.models.QueryResponse;   // wise-core'dan gelecek
+import com.wise.core.enums.UserRole;
+import com.wise.core.models.QueryResponse;
 import com.userservice.models.UserDto;
 import com.userservice.services.UsersService;
 import com.wise.core.security.RequiredRole;
@@ -36,12 +37,9 @@ public class UsersController {
     @GetMapping("/{id}")
     public ResponseEntity<QueryResponse<UserDto>> getById(@PathVariable("id") Integer id) {
         UserDto dto = usersService.getById(id);
-        if (dto == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-        }
         return ResponseEntity.ok(createQueryResponse(dto));
     }
-    @RequiredRole("ADMIN")
+    @RequiredRole(UserRole.ADMIN)
     @DeleteMapping("/{id}")
     public ResponseEntity<QueryResponse<String>> delete(@PathVariable("id") Integer id) {
         QueryResponse<String> queryResponse = new QueryResponse<>();

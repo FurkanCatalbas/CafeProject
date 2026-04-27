@@ -5,6 +5,7 @@ import com.productservice.models.ProductDto;
 import com.productservice.models.ProductEntity;
 import com.productservice.repository.ProductsRepository;
 import com.wise.core.enums.RecordStatusType;
+import com.wise.core.exceptions.ResourceNotFoundException;
 import com.wise.core.models.DefaultValueSetterBaseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -26,9 +27,7 @@ public class ProductsServiceImpl implements ProductsService {
 
     @Override
     public ProductDto update(ProductDto dto) {
-        if (getById(dto.getId()) == null) {
-            return null;
-        }
+        getById(dto.getId());
         return saveOrUpdate(RecordStatusType.UPDATE, dto);
     }
 
@@ -47,7 +46,8 @@ public class ProductsServiceImpl implements ProductsService {
 
     @Override
     public ProductDto getById(Integer id) {
-        ProductEntity entity = productsRepository.findById(id).orElse(null);
+        ProductEntity entity = productsRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Urun bulunamadi: " + id));
         return toDto(entity);
     }
 
@@ -67,9 +67,7 @@ public class ProductsServiceImpl implements ProductsService {
 
     @Override
     public void delete(Integer id) {
-        if (getById(id) == null) {
-            return;
-        }
+        getById(id);
         productsRepository.deleteById(id);
     }
 

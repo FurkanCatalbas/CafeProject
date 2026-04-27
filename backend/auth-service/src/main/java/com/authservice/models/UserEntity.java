@@ -1,5 +1,6 @@
 package com.authservice.models;
 
+import com.wise.core.enums.UserRole;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -40,8 +41,9 @@ public class UserEntity implements UserDetails{
     @Column(name = "EMAIL_ADDRESS", length = 50,nullable = false)
     private String emailAddress;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "ROLE_NAME", length = 50 ,nullable = false)
-    private String roleName;
+    private UserRole roleName;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

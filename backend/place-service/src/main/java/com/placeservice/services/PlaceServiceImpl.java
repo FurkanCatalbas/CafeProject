@@ -3,69 +3,93 @@ package com.placeservice.services;
 import com.placeservice.models.PlaceDto;
 import com.placeservice.models.PlaceEntity;
 import com.placeservice.repository.PlacesRespository;
-import com.wise.core.enums.RecordStatusType;
-import com.wise.core.models.DefaultValueSetterBaseDto;
-import jakarta.persistence.EntityManager;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
+import com.wise.core.enums.PlaceStatus;
+import com.wise.core.exceptions.ResourceNotFoundException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
-@AllArgsConstructor
-public class PlaceServiceImpl implements PlacesService{
+@RequiredArgsConstructor
+public class PlaceServiceImpl implements PlacesService {
 
     private final PlacesRespository placesRepository;
-    private final EntityManager entityManager;
 
     @Override
     public PlaceDto create(PlaceDto placeDto) {
         placeDto.setId(null);
+        if (placeDto.getStatus() == null) {
+            placeDto.setStatus(PlaceStatus.AVAILABLE);
+        }
         PlaceEntity entity = placesRepository.save(toEntity(placeDto));
         return toDto(entity);
     }
 
     @Override
     public PlaceDto update(PlaceDto placeDto) {
-        if (getById(placeDto.getId()) == null) {
-            // bu hatayı döndür throw new CustomResourceNotFoundException("PlaceEntity not found");
-        }
+        getById(placeDto.getId());
         PlaceEntity entity = placesRepository.save(toEntity(placeDto));
         return toDto(entity);
     }
 
-
     @Override
     public PlaceDto getById(Integer id) {
-
         PlaceEntity entity = placesRepository.findById(id)
-                .orElse(null);
-
+                .orElseThrow(() -> new ResourceNotFoundException("Masa bulunamadi: " + id));
         return toDto(entity);
     }
 
     @Override
-    public void delete(Integer id) {
+    public List<PlaceDto> getAll() {
+        return placesRepository.findAll().stream()
+                .map(this::toDto)
+                .collect(Collectors.toList());
+    }
 
-        if (getById(id) == null) {
-            //mutaf bu hataları yakala throw new CustomResourceNotFoundException("Entity not found");
-        }
+    @Override
+    public List<PlaceDto> getByStatus(PlaceStatus status) {
+        return placesRepository.findByStatus(status).stream()
+                .map(this::toDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public PlaceDto updateStatus(Integer id, PlaceStatus status) {
+        PlaceEntity entity = placesRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Masa bulunamadi: " + id));
+        entity.setStatus(status);
+        return toDto(placesRepository.save(entity));
+    }
+
+    @Override
+    public PlaceDto close(Integer id) {
+        return updateStatus(id, PlaceStatus.AVAILABLE);
+    }
+
+    @Override
+    public void delete(Integer id) {
+        getById(id);
         placesRepository.deleteById(id);
     }
 
-
-
-//mapper kullanmadan da yapılabilir
     private PlaceDto toDto(PlaceEntity entity) {
+        if (entity == null) {
+            return null;
+        }
         PlaceDto dto = new PlaceDto();
         BeanUtils.copyProperties(entity, dto);
         return dto;
     }
 
     private PlaceEntity toEntity(PlaceDto dto) {
-       PlaceEntity entity = new PlaceEntity();
-       BeanUtils.copyProperties(dto, entity);
-       return entity;
+        if (dto == null) {
+            return null;
+        }
+        PlaceEntity entity = new PlaceEntity();
+        BeanUtils.copyProperties(dto, entity);
+        return entity;
     }
 }
-

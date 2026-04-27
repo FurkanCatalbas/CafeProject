@@ -1,15 +1,21 @@
 package com.orderservice.services;
 
+import com.orderservice.clients.PlaceServiceClient;
 import com.orderservice.kafka.OrderEventProducer;
 import com.orderservice.mappers.OrderItemMapper;
 import com.orderservice.mappers.OrderMapper;
+import com.orderservice.models.DashboardSummaryDto;
 import com.orderservice.models.OrderCreatedEvent;
 import com.orderservice.models.OrderDto;
 import com.orderservice.models.OrderEntity;
 import com.orderservice.models.OrderItemDto;
 import com.orderservice.models.OrderItemEntity;
 import com.orderservice.repository.OrderRepository;
+import com.wise.core.exceptions.ResourceNotFoundException;
 import com.wise.core.enums.RecordStatusType;
+import com.wise.core.enums.OrderStatus;
+import com.wise.core.enums.PaymentMethod;
+import com.wise.core.enums.PaymentStatus;
 import com.wise.core.models.DefaultValueSetterBaseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -27,6 +33,7 @@ public class OrderServiceImpl implements OrderService {
 
     private final OrderRepository orderRepository;
     private final OrderEventProducer orderEventProducer;
+    private final PlaceServiceClient placeServiceClient;
 
     @Override
     @Transactional
@@ -34,7 +41,8 @@ public class OrderServiceImpl implements OrderService {
         dto.setId(null);
         dto.setUserId(userId);
         dto.setOrderDate(LocalDateTime.now());
-        dto.setStatus("PENDING");
+        dto.setStatus(OrderStatus.ORDER_RECEIVED);
+        dto.setPaymentStatus(PaymentStatus.UNPAID);
 
         DefaultValueSetterBaseDto.setDefaultValue(dto, RecordStatusType.CREATE, null);
 
@@ -67,6 +75,7 @@ public class OrderServiceImpl implements OrderService {
         OrderCreatedEvent event = new OrderCreatedEvent();
         event.setOrderId(entity.getId());
         event.setUserId(userId);
+        event.setPlaceId(entity.getPlaceId());
         event.setItems(dto.getOrderItems());
         orderEventProducer.sendOrderCreatedEvent(event);
 
@@ -75,9 +84,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public OrderDto update(OrderDto dto) {
-        if (getById(dto.getId()) == null) {
-            return null;
-        }
+        getById(dto.getId());
 
         if (dto.getOrderItems() != null && !dto.getOrderItems().isEmpty()) {
             BigDecimal totalAmount = BigDecimal.ZERO;
@@ -106,14 +113,86 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    public OrderDto updateStatus(Integer id, OrderStatus status) {
+        OrderEntity entity = orderRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Siparis bulunamadi: " + id));
+
+        entity.setStatus(status);
+        if (status == OrderStatus.PAID || status == OrderStatus.CANCELLED || status == OrderStatus.DELIVERED) {
+            entity.setCompletedDate(LocalDateTime.now());
+        }
+        entity.setModifiedDate(LocalDateTime.now());
+        entity.setUpdateseq(entity.getUpdateseq() == null ? 1 : entity.getUpdateseq() + 1);
+
+        return toDto(orderRepository.save(entity));
+    }
+
+    @Override
+    public OrderDto updatePaymentStatus(Integer id, PaymentStatus paymentStatus) {
+        OrderEntity entity = orderRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Siparis bulunamadi: " + id));
+
+        entity.setPaymentStatus(paymentStatus);
+        if (paymentStatus == PaymentStatus.PAID) {
+            entity.setStatus(OrderStatus.PAID);
+            entity.setCompletedDate(LocalDateTime.now());
+        }
+        entity.setModifiedDate(LocalDateTime.now());
+        entity.setUpdateseq(entity.getUpdateseq() == null ? 1 : entity.getUpdateseq() + 1);
+
+        return toDto(orderRepository.save(entity));
+    }
+
+    @Override
+    @Transactional
+    public OrderDto close(Integer id, PaymentMethod paymentMethod, Integer userId, String userRole) {
+        OrderEntity entity = orderRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Siparis bulunamadi: " + id));
+
+        entity.setPaymentMethod(paymentMethod);
+        entity.setPaymentStatus(PaymentStatus.PAID);
+        entity.setStatus(OrderStatus.PAID);
+        entity.setCompletedDate(LocalDateTime.now());
+        entity.setModifiedDate(LocalDateTime.now());
+        entity.setUpdateseq(entity.getUpdateseq() == null ? 1 : entity.getUpdateseq() + 1);
+
+        OrderEntity savedEntity = orderRepository.save(entity);
+        placeServiceClient.closePlace(savedEntity.getPlaceId(), userId, userRole);
+        return toDto(savedEntity);
+    }
+
+    @Override
     public OrderDto getById(Integer id) {
-        OrderEntity entity = orderRepository.findById(id).orElse(null);
+        OrderEntity entity = orderRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Siparis bulunamadi: " + id));
         return toDto(entity);
     }
 
     @Override
     public List<OrderDto> getByUserId(Integer userId) {
         return orderRepository.findByUserId(userId).stream()
+                .map(this::toDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<OrderDto> getActiveByPlaceId(Integer placeId) {
+        List<OrderStatus> activeStatuses = getActiveStatuses();
+        return orderRepository.findByPlaceIdAndStatusIn(placeId, activeStatuses).stream()
+                .map(this::toDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<OrderDto> getActive() {
+        return orderRepository.findByStatusIn(getActiveStatuses()).stream()
+                .map(this::toDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<OrderDto> getRecent() {
+        return orderRepository.findTop10ByOrderByOrderDateDesc().stream()
                 .map(this::toDto)
                 .collect(Collectors.toList());
     }
@@ -126,10 +205,37 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    public DashboardSummaryDto getDashboardSummary() {
+        List<OrderEntity> orders = orderRepository.findAll();
+        List<OrderStatus> activeStatuses = getActiveStatuses();
+
+        long activeOrderCount = orders.stream()
+                .filter(order -> activeStatuses.contains(order.getStatus()))
+                .count();
+        long waitingPaymentCount = orders.stream()
+                .filter(order -> order.getStatus() == OrderStatus.WAITING_PAYMENT)
+                .count();
+        long completedOrderCount = orders.stream()
+                .filter(order -> order.getStatus() == OrderStatus.PAID)
+                .count();
+        BigDecimal totalRevenue = orders.stream()
+                .filter(order -> order.getPaymentStatus() == PaymentStatus.PAID)
+                .map(OrderEntity::getTotalAmount)
+                .filter(java.util.Objects::nonNull)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        DashboardSummaryDto summary = new DashboardSummaryDto();
+        summary.setActiveOrderCount(activeOrderCount);
+        summary.setWaitingPaymentCount(waitingPaymentCount);
+        summary.setCompletedOrderCount(completedOrderCount);
+        summary.setTotalRevenue(totalRevenue);
+        summary.setRecentOrders(getRecent());
+        return summary;
+    }
+
+    @Override
     public void delete(Integer id) {
-        if (getById(id) == null) {
-            return;
-        }
+        getById(id);
         orderRepository.deleteById(id);
     }
 
@@ -139,5 +245,16 @@ public class OrderServiceImpl implements OrderService {
 
     private OrderEntity toEntity(OrderDto dto) {
         return OrderMapper.INSTANCE.toEntity(dto);
+    }
+
+    private List<OrderStatus> getActiveStatuses() {
+        return List.of(
+                OrderStatus.PENDING,
+                OrderStatus.ORDER_RECEIVED,
+                OrderStatus.PREPARING,
+                OrderStatus.READY,
+                OrderStatus.SERVED,
+                OrderStatus.WAITING_PAYMENT
+        );
     }
 }

@@ -8,6 +8,7 @@ import com.authservice.models.UserDto;
 import com.authservice.models.UserEntity;
 import com.authservice.repositorys.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.wise.core.enums.UserRole;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -33,6 +34,9 @@ public class UserServiceImpl implements UserService {
     @Override
     public TokenResponse register(UserDto userDto) {
 
+        if (userDto.getRoleName() == null) {
+            userDto.setRoleName(UserRole.CUSTOMER);
+        }
         userDto.setPassword(passwordEncoder.encode(userDto.getPassword()));
 
         UserEntity userEntity = toEntity(userDto);

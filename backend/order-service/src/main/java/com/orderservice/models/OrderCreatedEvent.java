@@ -13,5 +13,6 @@ public class OrderCreatedEvent {
 
     private Integer orderId;
     private Integer userId;
+    private Integer placeId;
     private List<OrderItemDto> items;
 }

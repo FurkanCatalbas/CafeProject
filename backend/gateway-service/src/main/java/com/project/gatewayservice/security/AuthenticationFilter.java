@@ -1,5 +1,6 @@
 package com.project.gatewayservice.security;
 
+import com.wise.core.enums.UserRole;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
@@ -16,6 +17,7 @@ import reactor.core.publisher.Mono;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 @Component
 public class AuthenticationFilter extends AbstractGatewayFilterFactory<AuthenticationFilter.Config> {
@@ -60,7 +62,7 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
 
             try {
                 userId = jwtService.extractUserId(token);
-                role = jwtService.extractRole(token);
+                role = normalizeRole(jwtService.extractRole(token));
                 if (!jwtService.isTokenValid(token, jwtService.extractUsername(token))) {
                     return onError(exchange, "ERR-003: Token geçersiz", HttpStatus.FORBIDDEN);
                 }
@@ -89,8 +91,12 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
                             if (configMethod.equalsIgnoreCase(method) && pathMatcher.match(configPathPattern, path)) {
 
                                 // Kullanıcının rolü, izin verilenler listesinde var mı?
-                                List<String> allowedRoles = Arrays.asList(allowedRolesRaw.split(","));
-                                if (role == null || !allowedRoles.contains(role.toUpperCase().trim())) {
+                                List<UserRole> allowedRoles = Arrays.stream(allowedRolesRaw.split(","))
+                                        .map(this::resolveRole)
+                                        .filter(Objects::nonNull)
+                                        .toList();
+                                UserRole requestRole = resolveRole(role);
+                                if (requestRole == null || !allowedRoles.contains(requestRole)) {
                                     return onError(exchange, "ERR-005: Yetkisiz Erişim. Gereken roller: " + allowedRolesRaw, HttpStatus.FORBIDDEN);
                                 }
                                 // Kural bulundu ve kullanıcı yetkili, döngüden çıkabiliriz
@@ -104,7 +110,7 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
             // 4. Başarılı ise isteği servise ilet (Header'ları zenginleştirerek)
             ServerHttpRequest mutatedRequest = request.mutate()
                     .header("X-User-Id", userId != null ? userId : "0")
-                    .header("X-User-Role", role != null ? role : "USER")
+                    .header("X-User-Role", role != null ? role : UserRole.CUSTOMER.getValue())
                     .build();
 
             return chain.filter(exchange.mutate().request(mutatedRequest).build());
@@ -116,5 +122,21 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
         exchange.getResponse().getHeaders().setContentType(org.springframework.http.MediaType.APPLICATION_JSON);
         String body = "{\"error\": \"" + err + "\"}";
         return exchange.getResponse().writeWith(Mono.just(exchange.getResponse().bufferFactory().wrap(body.getBytes())));
+    }
+
+    private String normalizeRole(String role) {
+        UserRole userRole = resolveRole(role);
+        return userRole == null ? null : userRole.getValue();
+    }
+
+    private UserRole resolveRole(String role) {
+        if (role == null || role.isBlank()) {
+            return null;
+        }
+        try {
+            return UserRole.fromValue(role.trim());
+        } catch (IllegalArgumentException exception) {
+            return null;
+        }
     }
 }

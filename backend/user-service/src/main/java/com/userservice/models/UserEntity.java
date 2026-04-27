@@ -1,8 +1,12 @@
 package com.userservice.models;
 
+import com.wise.core.enums.UserRole;
+import com.wise.core.enums.UserStatus;
 import com.wise.core.models.BaseEntity;  // wise-core'dan gelecek
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -19,8 +23,9 @@ import java.util.List;
 @Table(name = "USERS")
 public class UserEntity extends BaseEntity implements UserDetails {
 
-    @Column(name = "STATUS", columnDefinition = "smallint", nullable = false)
-    private Integer status;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "STATUS", length = 50, nullable = false)
+    private UserStatus status;
 
     @Column(name = "TYPE", columnDefinition = "smallint", nullable = false)
     private Integer type;
@@ -40,8 +45,9 @@ public class UserEntity extends BaseEntity implements UserDetails {
     @Column(name = "EMAIL_ADDRESS", length = 50,nullable = false)
     private String emailAddress;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "ROLE_NAME", length = 50 ,nullable = false)
-    private String roleName;
+    private UserRole roleName;
 
 
     @Override

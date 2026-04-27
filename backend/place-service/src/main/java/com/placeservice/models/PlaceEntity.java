@@ -1,7 +1,7 @@
 package com.placeservice.models;
 
 
-import com.wise.core.models.BaseEntity;
+import com.wise.core.enums.PlaceStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -19,8 +19,9 @@ public class PlaceEntity { // extend base entity lazım ama benim sql uuid sorun
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(name = "STATUS", columnDefinition = "smallint", nullable = false)
-    private Integer status;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "STATUS", length = 50, nullable = false)
+    private PlaceStatus status;
 
     @Column(name = "NAME", length = 50, nullable = false)
     private String name;

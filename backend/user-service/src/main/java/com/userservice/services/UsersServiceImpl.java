@@ -1,8 +1,11 @@
 package com.userservice.services;
 
-import com.wise.core.enums.RecordStatusType;               // wise-core'dan gelecek
+import com.wise.core.enums.RecordStatusType;
+import com.wise.core.enums.UserRole;
+import com.wise.core.enums.UserStatus;
 import com.userservice.mappers.UserMapper;
-import com.wise.core.models.DefaultValueSetterBaseDto;  // wise-core'dan gelecek
+import com.wise.core.exceptions.ResourceNotFoundException;
+import com.wise.core.models.DefaultValueSetterBaseDto;
 import com.userservice.models.UserDto;
 import com.userservice.models.UserEntity;
 import com.userservice.repository.UsersRepository;
@@ -29,13 +32,17 @@ public class UsersServiceImpl implements UsersService {
 
     @Override
     public UserDto update(UserDto userDto) {
-        if (getById(userDto.getId()) == null) {
-           // throw new CustomResourceNotFoundException("UserEntity not found");
-        }
+        getById(userDto.getId());
         return saveOrUpdate(RecordStatusType.UPDATE, userDto);
     }
 
     private UserDto saveOrUpdate(RecordStatusType recordStatusType,UserDto dto) {
+        if (dto.getStatus() == null) {
+            dto.setStatus(UserStatus.ACTIVE);
+        }
+        if (dto.getRoleName() == null) {
+            dto.setRoleName(UserRole.CUSTOMER);
+        }
         userSaveValidator.validateSave(dto);
 
         if (recordStatusType == RecordStatusType.CREATE) {
@@ -55,7 +62,7 @@ public class UsersServiceImpl implements UsersService {
     public UserDto getById(Integer id) {
 
         UserEntity entity = usersRepository.findById(id)
-                .orElse(null);
+                .orElseThrow(() -> new ResourceNotFoundException("Kullanici bulunamadi: " + id));
 
         return toDto(entity);
     }
@@ -63,9 +70,7 @@ public class UsersServiceImpl implements UsersService {
     @Override
     public void delete(Integer id) {
 
-        if (getById(id) == null) {
-            // throw new CustomResourceNotFoundException("Entity not found");
-        }
+        getById(id);
         usersRepository.deleteById(id);
     }
 

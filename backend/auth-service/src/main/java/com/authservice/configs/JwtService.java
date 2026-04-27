@@ -1,6 +1,7 @@
 package com.authservice.configs;
 
 import com.authservice.models.UserDto;
+import com.wise.core.enums.UserRole;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -53,7 +54,8 @@ public class JwtService {
         mapUser.put("fullName", userDto.getFirstName()+" "+userDto.getLastName());
         mapUser.put("userType", userDto.getType().toString());
 
-        mapUser.put("role", userDto.getRoleName());
+        UserRole userRole = userDto.getRoleName() == null ? UserRole.CUSTOMER : userDto.getRoleName();
+        mapUser.put("role", userRole.getValue());
 
         Map<String, Object> extraClaims = new HashMap<>();
         extraClaims.put("userObject", mapUser);

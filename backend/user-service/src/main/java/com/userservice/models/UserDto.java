@@ -1,5 +1,7 @@
 package com.userservice.models;
 
+import com.wise.core.enums.UserRole;
+import com.wise.core.enums.UserStatus;
 import lombok.Getter;
 import lombok.Setter;
 import com.wise.core.models.BaseDto; // wise-core'dan gelecek
@@ -7,7 +9,7 @@ import com.wise.core.models.BaseDto; // wise-core'dan gelecek
 @Getter
 @Setter
 public class UserDto extends BaseDto{
-    private Integer status;
+    private UserStatus status;
 
     private Integer type;
 
@@ -21,6 +23,6 @@ public class UserDto extends BaseDto{
 
     private String emailAddress;
 
-    private String roleName;
+    private UserRole roleName;
 
 }

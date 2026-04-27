@@ -1,5 +1,6 @@
 package com.wise.core.security;
 
+import com.wise.core.enums.UserRole;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.stereotype.Component;
@@ -13,12 +14,9 @@ public class RoleInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-        System.out.println("INTERCEPTOR TETIKLENDI!");
-        if (!(handler instanceof HandlerMethod)) {
+        if (!(handler instanceof HandlerMethod handlerMethod)) {
             return true;
         }
-
-        HandlerMethod handlerMethod = (HandlerMethod) handler;
 
         RequiredRole requiredRole = handlerMethod.getMethodAnnotation(RequiredRole.class);
         if (requiredRole == null) {
@@ -29,32 +27,35 @@ public class RoleInterceptor implements HandlerInterceptor {
             return true;
         }
 
-        // 1. Gateway'den gelen header'ı al
-        String userRole = request.getHeader("X-User-Role");
-        response.addHeader("X-Debug-Incoming-Role", userRole == null ? "NULL-GELDI" : userRole);
-        // DEBUG: Konsoldan ne geldiğini mutlaka kontrol et
-        System.out.println("DEBUG - Gelen Rol: [" + userRole + "]");
+        String userRoleHeader = request.getHeader("X-User-Role");
+        UserRole userRole = resolveUserRole(userRoleHeader);
 
-        if (userRole != null && !userRole.isEmpty()) {
-            String trimmedRole = userRole.trim();
-
-            // 2. Karşılaştırmayı daha esnek yap (Büyük/Küçük harf duyarsız)
+        if (userRole != null) {
             boolean hasAccess = Arrays.stream(requiredRole.value())
-                    .anyMatch(role -> role.equalsIgnoreCase(trimmedRole));
+                    .anyMatch(role -> role == userRole);
 
             if (hasAccess) {
                 return true;
             }
         }
 
-        // 3. Yetki yoksa log düş ki neden reddedildiğini anla
-        System.out.println("YETKİ REDDEDİLDİ: Beklenen: " + Arrays.toString(requiredRole.value()) + " - Gelen: " + userRole);
-
         response.setStatus(HttpServletResponse.SC_FORBIDDEN);
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
-        response.getWriter().write("{\"error\": \"Bu islem icin yetkiniz bulunmuyor. Gerekli rol: " + Arrays.toString(requiredRole.value()) + "\"}");
+        response.getWriter().write("{\"error\": \"Bu islem icin yetkiniz bulunmuyor. Gerekli rol: "
+                + Arrays.toString(requiredRole.value()) + "\"}");
 
         return false;
+    }
+
+    private UserRole resolveUserRole(String userRole) {
+        if (userRole == null || userRole.isBlank()) {
+            return null;
+        }
+        try {
+            return UserRole.fromValue(userRole.trim());
+        } catch (IllegalArgumentException exception) {
+            return null;
+        }
     }
 }

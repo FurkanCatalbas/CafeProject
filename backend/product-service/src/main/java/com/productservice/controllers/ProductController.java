@@ -2,6 +2,7 @@ package com.productservice.controllers;
 
 import com.productservice.models.ProductDto;
 import com.productservice.services.ProductsService;
+import com.wise.core.enums.UserRole;
 import com.wise.core.models.QueryResponse;
 import com.wise.core.security.RequiredRole;
 import lombok.RequiredArgsConstructor;
@@ -29,9 +30,6 @@ public class ProductController {
     @PutMapping("")
     public ResponseEntity<QueryResponse<ProductDto>> update(@RequestBody ProductDto dto) {
         ProductDto updated = productsService.update(dto);
-        if (updated == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-        }
         ProductDto returnDto = new ProductDto();
         returnDto.setId(updated.getId());
         return ResponseEntity.ok(createQueryResponse(returnDto));
@@ -40,9 +38,6 @@ public class ProductController {
     @GetMapping("/{id}")
     public ResponseEntity<QueryResponse<ProductDto>> getById(@PathVariable("id") Integer id) {
         ProductDto dto = productsService.getById(id);
-        if (dto == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-        }
         return ResponseEntity.ok(createQueryResponse(dto));
     }
 
@@ -58,7 +53,7 @@ public class ProductController {
         return ResponseEntity.ok(createQueryResponse(dtos));
     }
 
-    @RequiredRole("ADMIN")
+    @RequiredRole(UserRole.ADMIN)
     @DeleteMapping("/{id}")
     public ResponseEntity<QueryResponse<String>> delete(@PathVariable("id") Integer id) {
         productsService.delete(id);

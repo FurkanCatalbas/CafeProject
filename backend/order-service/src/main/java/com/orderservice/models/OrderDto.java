@@ -1,5 +1,8 @@
 package com.orderservice.models;
 
+import com.wise.core.enums.OrderStatus;
+import com.wise.core.enums.PaymentMethod;
+import com.wise.core.enums.PaymentStatus;
 import com.wise.core.models.BaseDto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -16,9 +19,13 @@ import java.util.List;
 @AllArgsConstructor
 public class OrderDto extends BaseDto {
     private Integer userId;
+    private Integer placeId;
     private LocalDateTime orderDate;
+    private LocalDateTime completedDate;
     private BigDecimal totalAmount;
-    private String status;
+    private OrderStatus status;
+    private PaymentStatus paymentStatus;
+    private PaymentMethod paymentMethod;
     private String note;
     private List<OrderItemDto> orderItems;
 }

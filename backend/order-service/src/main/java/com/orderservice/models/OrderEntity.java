@@ -1,5 +1,8 @@
 package com.orderservice.models;
 
+import com.wise.core.enums.OrderStatus;
+import com.wise.core.enums.PaymentMethod;
+import com.wise.core.enums.PaymentStatus;
 import com.wise.core.models.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -23,14 +26,29 @@ public class OrderEntity extends BaseEntity {
     @Column(name = "USER_ID", nullable = false)
     private Integer userId;
 
+    @Column(name = "PLACE_ID")
+    private Integer placeId;
+
     @Column(name = "ORDER_DATE", nullable = false)
     private LocalDateTime orderDate;
+
+    @Column(name = "COMPLETED_DATE")
+    private LocalDateTime completedDate;
 
     @Column(name = "TOTAL_AMOUNT", nullable = false)
     private BigDecimal totalAmount;
 
-    @Column(name = "STATUS")
-    private String status;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "STATUS", length = 50)
+    private OrderStatus status;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "PAYMENT_STATUS", length = 50)
+    private PaymentStatus paymentStatus;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "PAYMENT_METHOD", length = 50)
+    private PaymentMethod paymentMethod;
 
     @Column(name = "NOTE")
     private String note;
