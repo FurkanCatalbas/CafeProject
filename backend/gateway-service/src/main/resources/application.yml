@@ -1,13 +1,14 @@
 server:
-  port: 10101
+  port: ${PORT:10101}
 
 
 eureka:
   client:
-    register-with-eureka: true
-    fetch-registry: true
+    enabled: ${EUREKA_CLIENT_ENABLED:true}
+    register-with-eureka: ${EUREKA_CLIENT_REGISTER_WITH_EUREKA:true}
+    fetch-registry: ${EUREKA_CLIENT_FETCH_REGISTRY:true}
     service-url:
-      defaultZone: http://localhost:10100/eureka
+      defaultZone: ${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE:http://localhost:10100/eureka}
 
 
 spring:
@@ -44,7 +45,7 @@ spring:
             allow-credentials: true
       routes:
           - id: auth-service
-            uri: lb://auth-service  # Load balancer üzerinden
+            uri: ${AUTH_SERVICE_URI:lb://auth-service}
             predicates:
               - Path=/auth-service/**  # Auth servis için route
             filters:
@@ -52,7 +53,7 @@ spring:
               - RemoveRequestHeader=Cookie
 
           - id: user-service
-            uri: lb://user-service
+            uri: ${USER_SERVICE_URI:lb://user-service}
             predicates:
               - Path=/user-service/**
             filters:
@@ -63,7 +64,7 @@ spring:
                 authorizedRoles.DELETE./api/users/**: "ADMIN"
 
           - id: product-service
-            uri: lb://product-service
+            uri: ${PRODUCT_SERVICE_URI:lb://product-service}
             predicates:
               - Path=/product-service/**
             filters:
@@ -74,7 +75,7 @@ spring:
                 authorizedRoles.DELETE./api/products/**: "ADMIN"
 
           - id: order-service
-            uri: lb://order-service
+            uri: ${ORDER_SERVICE_URI:lb://order-service}
             predicates:
               - Path=/order-service/**
             filters:
@@ -85,7 +86,7 @@ spring:
                 authorizedRoles.DELETE./api/orders/**: "ADMIN"
 
           - id: place-service
-            uri: lb://place-service
+            uri: ${PLACE_SERVICE_URI:lb://place-service}
             predicates:
               - Path=/place-service/**
             filters:
@@ -96,7 +97,7 @@ spring:
                 authorizedRoles.DELETE./api/places/**: "ADMIN"
 
           - id: music-service
-            uri: lb://music-service
+            uri: ${MUSIC_SERVICE_URI:lb://music-service}
             predicates:
               - Path=/music-service/**
             filters:

@@ -1,0 +1,97 @@
+services:
+  - type: web
+    name: cafe-frontend
+    env: static
+    rootDir: frontend
+    buildCommand: npm ci && npm run build
+    staticPublishPath: build
+    envVars:
+      - key: REACT_APP_API_URL
+        value: https://cafe-gateway-service.onrender.com
+
+  - type: web
+    name: cafe-gateway-service
+    env: docker
+    dockerfilePath: ./backend/gateway-service/Dockerfile.render
+    dockerContext: .
+    envVars:
+      - key: EUREKA_CLIENT_ENABLED
+        value: "false"
+      - key: AUTH_SERVICE_URI
+        value: https://cafe-auth-service.onrender.com
+      - key: USER_SERVICE_URI
+        value: https://cafe-user-service.onrender.com
+      - key: PRODUCT_SERVICE_URI
+        value: https://cafe-product-service.onrender.com
+      - key: ORDER_SERVICE_URI
+        value: https://cafe-order-service.onrender.com
+      - key: PLACE_SERVICE_URI
+        value: https://cafe-place-service.onrender.com
+      - key: MUSIC_SERVICE_URI
+        value: https://cafe-music-service.onrender.com
+
+  - type: web
+    name: cafe-auth-service
+    env: docker
+    dockerfilePath: ./backend/auth-service/Dockerfile.render
+    dockerContext: .
+    envVars:
+      - key: EUREKA_CLIENT_ENABLED
+        value: "false"
+
+  - type: web
+    name: cafe-user-service
+    env: docker
+    dockerfilePath: ./backend/user-service/Dockerfile.render
+    dockerContext: .
+    envVars:
+      - key: EUREKA_CLIENT_ENABLED
+        value: "false"
+
+  - type: web
+    name: cafe-place-service
+    env: docker
+    dockerfilePath: ./backend/place-service/Dockerfile.render
+    dockerContext: .
+    envVars:
+      - key: EUREKA_CLIENT_ENABLED
+        value: "false"
+
+  - type: web
+    name: cafe-product-service
+    env: docker
+    dockerfilePath: ./backend/product-service/Dockerfile.render
+    dockerContext: .
+    envVars:
+      - key: EUREKA_CLIENT_ENABLED
+        value: "false"
+      - key: SPRING_KAFKA_LISTENER_AUTO_STARTUP
+        value: "false"
+      - key: SPRING_KAFKA_BOOTSTRAP_SERVERS
+        value: localhost:9092
+
+  - type: web
+    name: cafe-order-service
+    env: docker
+    dockerfilePath: ./backend/order-service/Dockerfile.render
+    dockerContext: .
+    envVars:
+      - key: EUREKA_CLIENT_ENABLED
+        value: "false"
+      - key: SPRING_KAFKA_BOOTSTRAP_SERVERS
+        value: localhost:9092
+
+  - type: web
+    name: cafe-music-service
+    env: docker
+    dockerfilePath: ./backend/music-service/Dockerfile.render
+    dockerContext: .
+    envVars:
+      - key: EUREKA_CLIENT_ENABLED
+        value: "false"
+      - key: MUSIC_VOTE_GATEWAY_BASE_URL
+        value: https://cafe-gateway-service.onrender.com
+      - key: MUSIC_VOTE_PUBLIC_URL_TEMPLATE
+        value: https://cafe-frontend.onrender.com/music-vote/%s
+      - key: SPOTIFY_REDIRECT_URI
+        value: https://cafe-gateway-service.onrender.com/music-service/api/music-votes/spotify/callback
