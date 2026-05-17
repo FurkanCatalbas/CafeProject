@@ -15,15 +15,18 @@ public class RouteValidator {
             "/auth-service/api/auth/register",
             "/auth-service/api/auth/token",
             "/auth-service/api/auth/refresh-token",
-            "/auth-service/api/auth/token",
+            "/music-service/api/music-votes/public",
+            "/music-service/api/music-votes/spotify/callback",
+            "/api/music-votes/public",
+            "/api/music-votes/spotify/callback",
             "/eureka"
     );
 
     public Predicate<ServerHttpRequest> isSecured =
             request -> {
-                String path = request.getURI().getPath(); // Bu gateway sonrası path
+                String path = request.getURI().getPath();
                 return openApiEndpoints
                         .stream()
-                        .noneMatch(uri -> pathMatcher.match(uri + "/**", path));
+                        .noneMatch(uri -> pathMatcher.match(uri, path) || pathMatcher.match(uri + "/**", path));
             };
 }

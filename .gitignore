@@ -1,29 +1,44 @@
-# IDE
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor / IDE
 .idea/
+.vscode/
+.windsurf/
+.cursor/
 *.iml
 
-# Java / Maven
-target/
+# Java / Maven build output
+**/target/
 *.class
-*.jar
-*.war
-*.ear
+
+# Frontend build and test artifacts
+node_modules/
+frontend/build/
+frontend/coverage/
+frontend/playwright-report/
+frontend/test-results/
+*.tsbuildinfo
 
 # Logs
 logs/
 *.log
 *.err
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
-# Node / frontend
-node_modules/
-dist/
-.vite/
+# Environment files
+#.env
+#.env.*
+#!.env.example
 
-# Environment
-.env
-.env.*
-!.env.example
-
-# OS
-.DS_Store
-Thumbs.db
+# Local root assets/scripts not for git
+/1.jpeg
+/2.jpeg
+/3.jpeg
+/RUN_GUIDE.md
+/start-system.sh
+/stop-system.sh
+frontend/README.md

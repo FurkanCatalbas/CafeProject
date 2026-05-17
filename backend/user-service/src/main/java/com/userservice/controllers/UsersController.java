@@ -11,7 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.Serializable;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/users")
@@ -39,6 +39,11 @@ public class UsersController {
         UserDto dto = usersService.getById(id);
         return ResponseEntity.ok(createQueryResponse(dto));
     }
+
+    @GetMapping("")
+    public ResponseEntity<QueryResponse<List<UserDto>>> getAll() {
+        return ResponseEntity.ok(createQueryResponse(usersService.getAll()));
+    }
     @RequiredRole(UserRole.ADMIN)
     @DeleteMapping("/{id}")
     public ResponseEntity<QueryResponse<String>> delete(@PathVariable("id") Integer id) {
@@ -47,7 +52,7 @@ public class UsersController {
         return ResponseEntity.status(HttpStatus.OK).body(queryResponse);
     }
 
-    private <T extends Serializable> QueryResponse<T> createQueryResponse(T data) {
+    private <T> QueryResponse<T> createQueryResponse(T data) {
         QueryResponse<T> queryResponse = new QueryResponse<>();
         queryResponse.setData(data);
         return queryResponse;

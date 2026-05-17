@@ -95,6 +95,15 @@ spring:
             metadata:
                 authorizedRoles.DELETE./api/places/**: "ADMIN"
 
+          - id: music-service
+            uri: lb://music-service
+            predicates:
+              - Path=/music-service/**
+            filters:
+              - StripPrefix=1
+              - RemoveRequestHeader=Cookie
+              - AuthenticationFilter
+
 # Application Security Configuration
 application:
   security:

@@ -5,6 +5,7 @@ import com.wise.core.models.QueryResponse;
 import com.wise.core.models.UIMessage;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -21,6 +22,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler({
             BadRequestException.class,
             IllegalArgumentException.class,
+            HttpMessageNotReadableException.class,
             MethodArgumentNotValidException.class,
             MethodArgumentTypeMismatchException.class
     })
