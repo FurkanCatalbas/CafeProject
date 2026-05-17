@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   Plus, 
   Search, 
@@ -37,6 +37,20 @@ interface OrderItem {
   totalPrice: number;
 }
 
+const mapOrderListItem = (item: any): Order => ({
+  id: item.id,
+  userId: item.userId ?? 0,
+  placeId: item.placeId ?? 0,
+  orderDate: item.orderDate,
+  totalAmount: Number(item.totalAmount ?? 0),
+  status: item.status ?? 'PENDING',
+  paymentStatus: item.paymentStatus ?? 'UNPAID',
+  paymentMethod: item.paymentMethod ?? 'CASH',
+  userName: `Kullanıcı #${item.userId ?? '-'}`,
+  placeName: `Masa #${item.placeId ?? '-'}`,
+  orderItems: item.orderItems ?? [],
+});
+
 const OrdersPage: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
@@ -64,21 +78,7 @@ const OrdersPage: React.FC = () => {
     unitPrice: '',
   });
 
-  const mapOrderListItem = (item: any): Order => ({
-    id: item.id,
-    userId: item.userId ?? 0,
-    placeId: item.placeId ?? 0,
-    orderDate: item.orderDate,
-    totalAmount: Number(item.totalAmount ?? 0),
-    status: item.status ?? 'PENDING',
-    paymentStatus: item.paymentStatus ?? 'UNPAID',
-    paymentMethod: item.paymentMethod ?? 'CASH',
-    userName: `Kullanıcı #${item.userId ?? '-'}`,
-    placeName: `Masa #${item.placeId ?? '-'}`,
-    orderItems: item.orderItems ?? [],
-  });
-
-  const loadOrders = async () => {
+  const loadOrders = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -89,7 +89,7 @@ const OrdersPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   const loadActiveOrdersByPlace = async () => {
     const parsedPlaceId = Number(activePlaceIdFilter);
@@ -117,7 +117,7 @@ const OrdersPage: React.FC = () => {
 
   useEffect(() => {
     loadOrders();
-  }, []);
+  }, [loadOrders]);
 
   const resetNewOrder = () => {
     setNewOrder({
