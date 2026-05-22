@@ -14,6 +14,7 @@ import UsersPage from './pages/users/UsersPage';
 import PlacesPage from './pages/places/PlacesPage';
 import ProductsPage from './pages/products/ProductsPage';
 import OrdersPage from './pages/orders/OrdersPage';
+import MusicPage from './pages/music/MusicPage';
 
 function App() {
   return (
@@ -35,6 +36,7 @@ function App() {
                       <Route path="places" element={<Navigate to="/tables" replace />} />
                       <Route path="products" element={<ProductsPage />} />
                       <Route path="orders" element={<OrdersPage />} />
+                      <Route path="music" element={<MusicPage />} />
                     </Routes>
                   </Layout>
                 </ProtectedRoute>
