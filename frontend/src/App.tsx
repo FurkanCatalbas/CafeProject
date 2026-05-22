@@ -14,6 +14,8 @@ import UsersPage from './pages/users/UsersPage';
 import PlacesPage from './pages/places/PlacesPage';
 import ProductsPage from './pages/products/ProductsPage';
 import OrdersPage from './pages/orders/OrdersPage';
+import QrMenuPage from './pages/public/QrMenuPage';
+import QrOrderPage from './pages/public/QrOrderPage';
 
 function App() {
   return (
@@ -24,6 +26,8 @@ function App() {
             <Routes>
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register" element={<RegisterPage />} />
+              <Route path="/qr-menu/:placeId" element={<QrMenuPage />} />
+              <Route path="/qr-order/:placeId" element={<QrOrderPage />} />
               <Route path="/*" element={
                 <ProtectedRoute>
                   <Layout>

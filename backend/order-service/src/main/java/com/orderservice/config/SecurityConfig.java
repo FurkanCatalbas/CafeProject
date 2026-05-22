@@ -27,6 +27,7 @@ public class SecurityConfig {
                 .formLogin(form -> form.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/orders").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(gatewayAuthFilter(), UsernamePasswordAuthenticationFilter.class);

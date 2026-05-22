@@ -1,6 +1,7 @@
 package com.orderservice.services;
 
 import com.orderservice.clients.PlaceServiceClient;
+import com.orderservice.clients.ProductServiceClient;
 import com.orderservice.kafka.OrderEventProducer;
 import com.orderservice.mappers.OrderItemMapper;
 import com.orderservice.mappers.OrderMapper;
@@ -34,17 +35,21 @@ public class OrderServiceImpl implements OrderService {
     private final OrderRepository orderRepository;
     private final OrderEventProducer orderEventProducer;
     private final PlaceServiceClient placeServiceClient;
+    private final ProductServiceClient productServiceClient;
 
     @Override
     @Transactional
     public OrderDto create(OrderDto dto, Integer userId) {
+        Integer resolvedUserId = userId == null ? 0 : userId;
+        placeServiceClient.validatePlaceForOrder(dto.getPlaceId(), resolvedUserId, null);
         dto.setId(null);
-        dto.setUserId(userId);
+        dto.setUserId(resolvedUserId);
         dto.setOrderDate(LocalDateTime.now());
         dto.setStatus(OrderStatus.ORDER_RECEIVED);
         dto.setPaymentStatus(PaymentStatus.UNPAID);
 
         DefaultValueSetterBaseDto.setDefaultValue(dto, RecordStatusType.CREATE, null);
+        normalizeOrderItems(dto);
 
         if (dto.getOrderItems() != null && !dto.getOrderItems().isEmpty()) {
             BigDecimal totalAmount = BigDecimal.ZERO;
@@ -74,7 +79,7 @@ public class OrderServiceImpl implements OrderService {
 
         OrderCreatedEvent event = new OrderCreatedEvent();
         event.setOrderId(entity.getId());
-        event.setUserId(userId);
+        event.setUserId(resolvedUserId);
         event.setPlaceId(entity.getPlaceId());
         event.setItems(dto.getOrderItems());
         orderEventProducer.sendOrderCreatedEvent(event);
@@ -85,6 +90,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public OrderDto update(OrderDto dto) {
         getById(dto.getId());
+        normalizeOrderItems(dto);
 
         if (dto.getOrderItems() != null && !dto.getOrderItems().isEmpty()) {
             BigDecimal totalAmount = BigDecimal.ZERO;
@@ -256,5 +262,22 @@ public class OrderServiceImpl implements OrderService {
                 OrderStatus.SERVED,
                 OrderStatus.WAITING_PAYMENT
         );
+    }
+
+    private void normalizeOrderItems(OrderDto dto) {
+        if (dto.getOrderItems() == null || dto.getOrderItems().isEmpty()) {
+            return;
+        }
+
+        for (OrderItemDto item : dto.getOrderItems()) {
+            if (item.getQuantity() == null || item.getQuantity() <= 0) {
+                throw new com.wise.core.exceptions.BadRequestException("Urun adedi pozitif olmalidir.");
+            }
+
+            ProductServiceClient.ProductClientDto product = productServiceClient.getProductById(item.getProductId());
+            item.setProductName(product.getName());
+            item.setUnitPrice(product.getPrice());
+            item.setTotalPrice(product.getPrice().multiply(BigDecimal.valueOf(item.getQuantity())));
+        }
     }
 }

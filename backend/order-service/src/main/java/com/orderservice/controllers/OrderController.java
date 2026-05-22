@@ -32,7 +32,9 @@ public class OrderController {
     private final OrderService orderService;
 
     @PostMapping("")
-    public ResponseEntity<QueryResponse<OrderDto>> create(@RequestBody OrderDto dto, @RequestHeader("X-User-Id") Integer userId) {
+    public ResponseEntity<QueryResponse<OrderDto>> create(
+            @RequestBody OrderDto dto,
+            @RequestHeader(value = "X-User-Id", required = false) Integer userId) {
         OrderDto returnDto = orderService.create(dto, userId);
         return ResponseEntity.status(HttpStatus.CREATED).body(createOrderResponse(returnDto));
     }
