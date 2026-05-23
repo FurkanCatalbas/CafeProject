@@ -38,79 +38,41 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
     public GatewayFilter apply(Config config) {
         return (exchange, chain) -> {
             ServerHttpRequest request = exchange.getRequest();
-            String path = request.getURI().getPath();
-            String method = request.getMethod().name();
+            
+            // 1. Token var mı kontrol et (Her zaman kontrol ediyoruz)
+            String authHeader = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
+            String token = (authHeader != null && authHeader.startsWith("Bearer ")) ? authHeader.substring(7) : null;
+            
+            String userId = "0";
+            String role = UserRole.CUSTOMER.getValue();
 
-            // 1. Route secured mı? Değilse (login/register) direkt geç
-            if (!validator.isSecured.test(request)) {
-                return chain.filter(exchange);
-            }
-
-            // 2. Token Validasyonu (Mevcut kodunuz)
-            if (!request.getHeaders().containsKey(HttpHeaders.AUTHORIZATION)) {
+            // 2. Token varsa bilgileri her durumda çıkar
+            if (token != null) {
+                try {
+                    userId = jwtService.extractUserId(token);
+                    role = normalizeRole(jwtService.extractRole(token));
+                    
+                    // Sadece korumalı rotalarda token validasyonu yap
+                    if (validator.isSecured.test(request)) {
+                        if (!jwtService.isTokenValid(token, jwtService.extractUsername(token))) {
+                            return onError(exchange, "ERR-003: Token gecersiz", HttpStatus.FORBIDDEN);
+                        }
+                    }
+                } catch (Exception e) {
+                    if (validator.isSecured.test(request)) {
+                        return onError(exchange, "ERR-004: Token dogrulama hatasi", HttpStatus.FORBIDDEN);
+                    }
+                }
+            } else if (validator.isSecured.test(request)) {
+                // Token yok ama rota korumalı ise hata ver
                 return onError(exchange, "ERR-001: Token eksik", HttpStatus.UNAUTHORIZED);
             }
 
-            String authHeader = request.getHeaders().get(HttpHeaders.AUTHORIZATION).get(0);
-            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-                return onError(exchange, "ERR-002: Format hatalı", HttpStatus.BAD_REQUEST);
-            }
-
-            String token = authHeader.substring(7);
-            String userId;
-            String role;
-
-            try {
-                userId = jwtService.extractUserId(token);
-                role = normalizeRole(jwtService.extractRole(token));
-                if (!jwtService.isTokenValid(token, jwtService.extractUsername(token))) {
-                    return onError(exchange, "ERR-003: Token geçersiz", HttpStatus.FORBIDDEN);
-                }
-            } catch (Exception e) {
-                return onError(exchange, "ERR-004: Parse hatası", HttpStatus.FORBIDDEN);
-            }
-
-            // 3. ✅ DİNAMİK ROLE KONTROLÜ (Metadata Okuma)
-            // Route objesini exchange'den çekiyoruz
-            Route route = exchange.getAttribute("org.springframework.cloud.gateway.support.ServerWebExchangeUtils.gatewayRoute");
-
-            if (route != null && route.getMetadata() != null) {
-                // Metadata içindeki "authorizedRoles" haritasını tarıyoruz
-                for (Map.Entry<String, Object> entry : route.getMetadata().entrySet()) {
-                    String key = entry.getKey();
-
-                    // Sadece bizim formatımıza uygun anahtarları işle: "authorizedRoles.METHOD.PATH"
-                    if (key != null && key.startsWith("authorizedRoles.")) {
-                        String[] parts = key.split("\\.", 3); // Max 3 parçaya böl
-                        if (parts.length == 3) {
-                            String configMethod = parts[1];       // Örn: DELETE
-                            String configPathPattern = parts[2];  // Örn: /api/users/**
-                            String allowedRolesRaw = (String) entry.getValue(); // Örn: "ADMIN,MANAGER"
-
-                            // Metod eşleşiyor mu VE Path pattern ile istek yolu uyuşuyor mu?
-                            if (configMethod.equalsIgnoreCase(method) && pathMatcher.match(configPathPattern, path)) {
-
-                                // Kullanıcının rolü, izin verilenler listesinde var mı?
-                                List<UserRole> allowedRoles = Arrays.stream(allowedRolesRaw.split(","))
-                                        .map(this::resolveRole)
-                                        .filter(Objects::nonNull)
-                                        .toList();
-                                UserRole requestRole = resolveRole(role);
-                                if (requestRole == null || !allowedRoles.contains(requestRole)) {
-                                    return onError(exchange, "ERR-005: Yetkisiz Erişim. Gereken roller: " + allowedRolesRaw, HttpStatus.FORBIDDEN);
-                                }
-                                // Kural bulundu ve kullanıcı yetkili, döngüden çıkabiliriz
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-
-            // 4. Başarılı ise isteği servise ilet (Header'ları zenginleştirerek)
+            // 3. Header'ları zenginleştirerek isteği ilet
+            // Bu sayede hem Admin (POST yaparken) hem Müşteri (GET yaparken) tanınacak
             ServerHttpRequest mutatedRequest = request.mutate()
-                    .header("X-User-Id", userId != null ? userId : "0")
-                    .header("X-User-Role", role != null ? role : UserRole.CUSTOMER.getValue())
+                    .header("X-User-Id", userId)
+                    .header("X-User-Role", role)
                     .build();
 
             return chain.filter(exchange.mutate().request(mutatedRequest).build());

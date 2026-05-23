@@ -42,6 +42,11 @@ public class PlaceController {
         return ResponseEntity.ok(createQueryResponse(dto));
     }
 
+    @GetMapping("/public/qr/{qrCode}")
+    public ResponseEntity<QueryResponse<PlaceDto>> getByQrCode(@PathVariable("qrCode") String qrCode) {
+        return ResponseEntity.ok(createQueryResponse(placesService.getByQrCode(qrCode)));
+    }
+
     @GetMapping("")
     public ResponseEntity<QueryResponses<PlaceDto>> getAll() {
         return ResponseEntity.ok(createQueryResponses(placesService.getAll()));

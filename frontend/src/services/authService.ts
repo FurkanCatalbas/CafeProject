@@ -2,7 +2,16 @@ import axios from 'axios';
 import { unwrapApiData } from './apiResponse';
 
 const configuredApiUrl = (process.env.REACT_APP_API_URL || '').trim();
-const API_BASE_URL = configuredApiUrl || 'http://localhost:10101';
+
+// Mobil erişim için localhost yerine mevcut IP adresini dinamik olarak kullan
+const getBaseUrl = () => {
+  if (configuredApiUrl) return configuredApiUrl;
+  const hostname = window.location.hostname;
+  // Eğer localhost ise 10101 portuna git, değilse (IP ise) yine o IP'nin 10101 portuna git
+  return `http://${hostname}:10101`;
+};
+
+const API_BASE_URL = getBaseUrl();
 const TOKEN_KEY = 'token';
 const REFRESH_TOKEN_KEY = 'refreshToken';
 

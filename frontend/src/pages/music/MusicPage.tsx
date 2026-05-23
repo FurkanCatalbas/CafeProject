@@ -103,8 +103,10 @@ const MusicPage: React.FC = () => {
       const updatedSession = await musicService.selectPlaylist(placeId, playlistId);
       setSession(updatedSession);
       await fetchTracks();
-    } catch (err) {
+      alert('Playlist başarıyla seçildi ve şarkılar aktarıldı.');
+    } catch (err: any) {
       console.error('Playlist seçme hatası:', err);
+      alert(err.response?.data?.message || 'Playlist seçilemedi. En az 2 saniye bekleyip tekrar deneyin veya farklı bir liste seçin.');
     } finally {
       setActionLoading(false);
     }
@@ -117,7 +119,7 @@ const MusicPage: React.FC = () => {
       setCurrentRound(round);
     } catch (err: any) {
       console.error('Round başlatma hatası:', err);
-      alert(err.response?.data?.message || 'Oylama başlatılamadı.');
+      alert(err.response?.data?.message || 'Oylama başlatılamadı. Playlistin yeterli şarkı içerdiğinden emin olun.');
     } finally {
       setActionLoading(false);
     }

@@ -15,6 +15,9 @@ import PlacesPage from './pages/places/PlacesPage';
 import ProductsPage from './pages/products/ProductsPage';
 import OrdersPage from './pages/orders/OrdersPage';
 import MusicPage from './pages/music/MusicPage';
+import WelcomePage from './pages/public/WelcomePage';
+import PublicMenuPage from './pages/public/PublicMenuPage';
+import PublicMusicVotePage from './pages/public/PublicMusicVotePage';
 
 function App() {
   return (
@@ -25,6 +28,12 @@ function App() {
             <Routes>
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register" element={<RegisterPage />} />
+              
+              {/* Public Routes */}
+              <Route path="/welcome/:qrCode" element={<WelcomePage />} />
+              <Route path="/menu" element={<PublicMenuPage />} />
+              <Route path="/music-vote/:qrCode" element={<PublicMusicVotePage />} />
+
               <Route path="/*" element={
                 <ProtectedRoute>
                   <Layout>

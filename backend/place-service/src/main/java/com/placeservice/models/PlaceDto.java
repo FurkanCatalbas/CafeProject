@@ -9,8 +9,7 @@ import java.io.Serializable;
 @Data
 public class PlaceDto extends BaseDto implements Serializable {
     private PlaceStatus status;
-
-    private Integer managerId;
-
     private String name;
+    private Integer managerId;
+    private String qrCode;
 }

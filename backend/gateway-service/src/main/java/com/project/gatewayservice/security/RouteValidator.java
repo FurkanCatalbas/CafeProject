@@ -19,6 +19,10 @@ public class RouteValidator {
             "/music-service/api/music-votes/spotify/callback",
             "/api/music-votes/public",
             "/api/music-votes/spotify/callback",
+            "/place-service/api/places/public",
+            "/api/places/public",
+            "/product-service/api/products",
+            "/api/products",
             "/eureka"
     );
 

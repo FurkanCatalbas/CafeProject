@@ -97,5 +97,24 @@ export const musicService = {
   closeRound: async (placeId: number, deviceId?: string) => {
     const response = await api.post(`/music-service/api/music-votes/venues/${placeId}/rounds/current/close`, { deviceId });
     return unwrapApiData<VoteRoundDto>(response.data);
+  },
+
+  // Public Methods (Müşteriler için login gerektirmeyenler)
+  getPublicSession: async (qrCode: string) => {
+    const response = await api.get(`/music-service/api/music-votes/public/${qrCode}`);
+    return unwrapApiData<any>(response.data);
+  },
+
+  vote: async (qrCode: string, roundId: number, trackId: number) => {
+    const response = await api.post(`/music-service/api/music-votes/public/${qrCode}/vote`, {
+      roundId,
+      trackId
+    });
+    return unwrapApiData<any>(response.data);
+  },
+
+  getPublicSessionByPlaceId: async (placeId: number) => {
+    const response = await api.get(`/music-service/api/music-votes/public/venue/${placeId}`);
+    return unwrapApiData<any>(response.data);
   }
 };

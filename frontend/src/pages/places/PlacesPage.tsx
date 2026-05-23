@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Search, Edit, Trash2, MapPin, Users, CheckCircle } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, MapPin, Users, CheckCircle, QrCode, ExternalLink } from 'lucide-react';
 import { placesService } from '../../services/placesService';
 import ModalOverlay from '../../components/common/ModalOverlay';
 
@@ -9,6 +9,7 @@ interface Place {
   managerId: number;
   status: 'AVAILABLE' | 'OCCUPIED' | 'RESERVED' | 'CLOSED';
   managerName: string;
+  qrCode?: string;
 }
 
 const PlacesPage: React.FC = () => {
@@ -19,6 +20,8 @@ const PlacesPage: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState('all');
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showQrModal, setShowQrModal] = useState(false);
+  const [selectedPlaceForQr, setSelectedPlaceForQr] = useState<Place | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingPlaceId, setEditingPlaceId] = useState<number | null>(null);
   const [newPlace, setNewPlace] = useState({
@@ -43,6 +46,7 @@ const PlacesPage: React.FC = () => {
           name: item.name,
           managerId: item.managerId ?? 0,
           status: item.status ?? 'AVAILABLE',
+          qrCode: item.qrCode,
           managerName: `Yönetici #${item.managerId ?? '-'}`,
         }))
       );
@@ -153,6 +157,16 @@ const PlacesPage: React.FC = () => {
     }
   };
 
+  const handleOpenQrModal = (place: Place) => {
+    setSelectedPlaceForQr(place);
+    setShowQrModal(true);
+  };
+
+  const closeQrModal = () => {
+    setShowQrModal(false);
+    setSelectedPlaceForQr(null);
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'AVAILABLE': return 'bg-green-600';
@@ -197,6 +211,8 @@ const PlacesPage: React.FC = () => {
       </div>
     );
   }
+
+  const getWelcomeUrl = (qrCode: string) => `${window.location.origin}/welcome/${qrCode}`;
 
   return (
     <div className="p-6 space-y-6">
@@ -255,15 +271,31 @@ const PlacesPage: React.FC = () => {
                 <div className="w-12 h-12 bg-primary-600 rounded-lg flex items-center justify-center">
                   <StatusIcon className="w-6 h-6 text-white" />
                 </div>
-                <span className={`px-3 py-1 rounded-full text-xs font-medium text-white ${getStatusColor(place.status)}`}>
-                  {getStatusLabel(place.status)}
-                </span>
+                <div className="flex gap-2">
+                  {place.qrCode && (
+                    <button 
+                      onClick={() => handleOpenQrModal(place)}
+                      className="p-2 text-primary-400 hover:text-primary-100 hover:bg-primary-900/20 rounded-lg transition-colors"
+                      title="QR Kod Görüntüle"
+                    >
+                      <QrCode className="w-5 h-5" />
+                    </button>
+                  )}
+                  <span className={`px-3 py-1 rounded-full text-xs font-medium text-white ${getStatusColor(place.status)}`}>
+                    {getStatusLabel(place.status)}
+                  </span>
+                </div>
               </div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">{place.name}</h3>
               <div className="flex items-center gap-2 text-gray-500 mb-4">
                 <Users className="w-4 h-4" />
                 <span className="text-sm">Yönetici: {place.managerName}</span>
               </div>
+              {place.qrCode && (
+                <div className="text-[10px] font-mono text-gray-400 mb-4 uppercase tracking-wider">
+                  Kod: {place.qrCode}
+                </div>
+              )}
               <div className="flex gap-2">
                 <button
                   onClick={() => handleOpenEditPlace(place)}
@@ -288,6 +320,46 @@ const PlacesPage: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* QR Kod Modalı */}
+      {showQrModal && selectedPlaceForQr && (
+        <ModalOverlay>
+          <div className="bg-white border border-gray-200 rounded-2xl p-8 w-full max-w-sm shadow-2xl flex flex-col items-center text-center">
+            <h2 className="text-2xl font-black text-gray-900 mb-2">{selectedPlaceForQr.name}</h2>
+            <p className="text-sm text-gray-500 mb-6 font-medium tracking-tight">Müşteri Karşılama QR Kodu</p>
+            
+            <div className="bg-slate-50 p-6 rounded-3xl border-4 border-slate-100 mb-6">
+              <img 
+                src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(getWelcomeUrl(selectedPlaceForQr.qrCode!))}`} 
+                alt="QR Code" 
+                className="w-48 h-48 rounded-lg shadow-sm"
+              />
+            </div>
+
+            <div className="w-full bg-slate-100 p-3 rounded-xl mb-6 flex items-center justify-between gap-2 overflow-hidden">
+               <span className="text-[10px] font-mono text-gray-500 truncate">{getWelcomeUrl(selectedPlaceForQr.qrCode!)}</span>
+               <a 
+                href={getWelcomeUrl(selectedPlaceForQr.qrCode!)} 
+                target="_blank" 
+                rel="noreferrer"
+                className="text-primary-600 hover:text-primary-700"
+               >
+                 <ExternalLink className="w-4 h-4" />
+               </a>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 w-full">
+              <button onClick={closeQrModal} className="btn-secondary w-full">Kapat</button>
+              <button 
+                onClick={() => window.print()} 
+                className="btn-primary w-full flex items-center justify-center gap-2"
+              >
+                Yazdır
+              </button>
+            </div>
+          </div>
+        </ModalOverlay>
+      )}
 
       {/* Masa Ekleme Modalı */}
       {showCreateModal && (

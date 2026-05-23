@@ -29,4 +29,7 @@ public class PlaceEntity { // extend base entity lazım ama benim sql uuid sorun
     @Column(name = "MANAGER_ID", length = 50, nullable = false)
     private Integer managerId;
 
+    @Column(name = "QR_CODE", length = 100, unique = true)
+    private String qrCode;
+
 }

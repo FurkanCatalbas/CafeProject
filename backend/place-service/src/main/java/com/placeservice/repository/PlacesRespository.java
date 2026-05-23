@@ -6,8 +6,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface PlacesRespository extends JpaRepository<PlaceEntity,Integer> {
     List<PlaceEntity> findByStatus(PlaceStatus status);
+    Optional<PlaceEntity> findByQrCode(String qrCode);
 }
