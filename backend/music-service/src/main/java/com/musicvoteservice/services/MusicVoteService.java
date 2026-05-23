@@ -193,6 +193,14 @@ public class MusicVoteService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
+    public VoteRoundDto getCurrentRound(Integer placeId, Integer ownerUserId, String userRole) {
+        requireOwner(ownerUserId, userRole);
+        return voteRoundRepository.findFirstByPlaceIdAndStatusOrderByRoundNumberDesc(placeId, VoteRoundStatus.ACTIVE)
+                .map(this::toRoundDto)
+                .orElse(null);
+    }
+
     @Transactional
     public VoteRoundDto startNextRound(Integer placeId, Integer ownerUserId, String userRole) {
         requireOwner(ownerUserId, userRole);
