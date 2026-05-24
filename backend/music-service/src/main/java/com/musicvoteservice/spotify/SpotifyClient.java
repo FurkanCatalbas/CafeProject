@@ -98,11 +98,20 @@ public class SpotifyClient {
                     dto.setName(text(item.path("name")));
                     dto.setUri(text(item.path("uri")));
                     
-                    // Şarkı sayısını çekme (tracks.total)
+                    // Şarkı sayısını çekme (Raw JSON'da 'items.total' olarak geliyor)
+                    int total = 0;
+                    JsonNode itemsNode = item.path("items");
                     JsonNode tracksNode = item.path("tracks");
-                    int total = tracksNode.path("total").asInt(0);
-                    dto.setTrackCount(total);
                     
+                    if (itemsNode.isObject() && itemsNode.has("total")) {
+                        total = itemsNode.path("total").asInt(0);
+                    } else if (tracksNode.isObject() && tracksNode.has("total")) {
+                        total = tracksNode.path("total").asInt(0);
+                    } else if (item.has("track_count")) {
+                        total = item.path("track_count").asInt(0);
+                    }
+                    
+                    dto.setTrackCount(total);
                     dto.setImageUrl(firstImage(item.path("images")));
                     dto.setExternalUrl(text(item.path("external_urls").path("spotify")));
                     
@@ -148,12 +157,24 @@ public class SpotifyClient {
             }
 
             for (JsonNode item : items) {
-                JsonNode track = item.path("track");
+                // Spotify bazen 'track' bazen 'item' anahtarını kullanır
+                JsonNode track = item;
+                if (item.has("track")) {
+                    track = item.path("track");
+                } else if (item.has("item")) {
+                    track = item.path("item");
+                }
+                
                 String type = text(track.path("type"));
                 boolean isLocal = track.path("is_local").asBoolean(false);
 
+                // Eğer tip bulunamadıysa ama id varsa, muhtemelen direkt track nesnesidir
+                if (type == null && track.has("id")) {
+                    type = "track";
+                }
+
                 if (!"track".equals(type) || isLocal) {
-                    System.out.println("[SPOTIFY-CLIENT] Item atlandi (Type: " + type + ", Local: " + isLocal + ")");
+                    System.out.println("[SPOTIFY-CLIENT] Item atlandi (Type: " + type + ", Local: " + isLocal + ", Name: " + text(track.path("name")) + ")");
                     continue;
                 }
 
@@ -162,15 +183,15 @@ public class SpotifyClient {
                 dto.setSpotifyUri(text(track.path("uri")));
                 dto.setName(text(track.path("name")));
                 dto.setArtistName(artistNames(track.path("artists")));
-                dto.setAlbumName(text(track.path("album").path("name")));
-                dto.setImageUrl(firstImage(track.path("album").path("images")));
+                
+                JsonNode album = track.path("album");
+                dto.setAlbumName(text(album.path("name")));
+                dto.setImageUrl(firstImage(album.path("images")));
                 dto.setExternalUrl(text(track.path("external_urls").path("spotify")));
                 dto.setPlaylistPosition(tracks.size());
 
                 if (dto.getSpotifyTrackId() != null && dto.getSpotifyUri() != null) {
                     tracks.add(dto);
-                } else {
-                    System.out.println("[SPOTIFY-CLIENT] Sarki bilgisi eksik, eklenemedi: " + dto.getName());
                 }
             }
 

@@ -293,6 +293,24 @@ public class MusicVoteService {
         return dto;
     }
 
+    @Transactional(readOnly = true)
+    public PublicVoteSessionDto getPublicSessionByPlaceId(Integer placeId) {
+        MusicVenueSessionEntity session = musicVenueSessionRepository.findByPlaceId(placeId)
+                .orElseThrow(() -> new ResourceNotFoundException("Mekan için oylama oturumu bulunamadı."));
+        
+        if (!Boolean.TRUE.equals(session.getActive())) {
+            throw new BadRequestException("Bu mekanın oylaması şu an aktif değil.");
+        }
+
+        PublicVoteSessionDto dto = new PublicVoteSessionDto();
+        dto.setPlaceId(session.getPlaceId());
+        dto.setQrCode(session.getQrCode());
+        dto.setPlaylistName(session.getPlaylistName());
+        voteRoundRepository.findFirstByPlaceIdAndStatusOrderByRoundNumberDesc(session.getPlaceId(), VoteRoundStatus.ACTIVE)
+                .ifPresent(round -> dto.setCurrentRound(toRoundDto(round)));
+        return dto;
+    }
+
     @Transactional
     public VoteResultDto vote(String qrCode, VoteRequest request, String remoteAddress, String userAgent) {
         if (request == null || request.getRoundId() == null || request.getTrackId() == null) {
@@ -362,21 +380,33 @@ public class MusicVoteService {
         return connection.getAccessToken();
     }
 
-    private MusicVenueSessionEntity getOrCreateSessionEntity(Integer placeId, Integer ownerUserId) {
+    private synchronized MusicVenueSessionEntity getOrCreateSessionEntity(Integer placeId, Integer ownerUserId) {
         if (placeId == null) {
             throw new BadRequestException("Mekan id zorunludur.");
         }
-        return musicVenueSessionRepository.findByPlaceId(placeId)
-                .orElseGet(() -> {
-                    MusicVenueSessionEntity session = new MusicVenueSessionEntity();
-                    session.setPlaceId(placeId);
-                    session.setOwnerUserId(ownerUserId);
-                    session.setQrCode(uniqueQrCode());
-                    session.setActive(true);
-                    session.setCurrentTrackOffset(0);
-                    session.setPublicVotingUrl(publicVotingUrl(session.getQrCode()));
-                    return musicVenueSessionRepository.save(session);
-                });
+        
+        // Önce mevcut olanı bulmaya çalış
+        java.util.Optional<MusicVenueSessionEntity> existing = musicVenueSessionRepository.findByPlaceId(placeId);
+        if (existing.isPresent()) {
+            return existing.get();
+        }
+
+        // Yoksa oluştur
+        try {
+            MusicVenueSessionEntity session = new MusicVenueSessionEntity();
+            session.setPlaceId(placeId);
+            session.setOwnerUserId(ownerUserId);
+            session.setQrCode(uniqueQrCode());
+            session.setActive(true);
+            session.setCurrentTrackOffset(0);
+            session.setPublicVotingUrl(publicVotingUrl(session.getQrCode()));
+            
+            return musicVenueSessionRepository.saveAndFlush(session);
+        } catch (Exception e) {
+            // Eğer o sırada başka bir istek eklediyse veritabanına tekrar bak
+            return musicVenueSessionRepository.findByPlaceId(placeId)
+                    .orElseThrow(() -> new BadRequestException("Muzik oturumu olusturulamadi veya alinamadi."));
+        }
     }
 
     private MusicVenueSessionEntity getSessionByPlace(Integer placeId) {

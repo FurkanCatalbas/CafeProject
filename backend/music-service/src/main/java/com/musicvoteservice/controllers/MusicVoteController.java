@@ -125,6 +125,11 @@ public class MusicVoteController {
         return ResponseEntity.ok(single(musicVoteService.getPublicSession(qrCode)));
     }
 
+    @GetMapping("/public/venue/{placeId}")
+    public ResponseEntity<QueryResponse<PublicVoteSessionDto>> publicSessionByPlaceId(@PathVariable("placeId") Integer placeId) {
+        return ResponseEntity.ok(single(musicVoteService.getPublicSessionByPlaceId(placeId)));
+    }
+
     @PostMapping("/public/{qrCode}/vote")
     public ResponseEntity<QueryResponse<VoteResultDto>> vote(
             @PathVariable("qrCode") String qrCode,
