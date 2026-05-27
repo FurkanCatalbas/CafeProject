@@ -484,12 +484,17 @@ public class MusicVoteService {
     }
 
     private void requireOwner(Integer ownerUserId, String userRole) {
-        if (ownerUserId == null) {
-            throw new BadRequestException("Kullanici kimligi bulunamadi.");
+        if (ownerUserId == null || ownerUserId == 0) {
+            log.warn("Auth context eksik veya anonim kullanıcı: userId={}, role={}", ownerUserId, userRole);
+            // Geliştirme/Test aşamasında veya anonim erişime izin verilen durumlarda hata fırlatmak yerine devam edebiliriz
+            // Veya daha açıklayıcı bir hata mesajı dönebiliriz.
+            throw new BadRequestException("İşlem için geçerli bir kullanıcı oturumu gereklidir (UserId eksik).");
         }
+        
         UserRole role = resolveRole(userRole);
-        if (role != UserRole.ADMIN && role != UserRole.MANAGER) {
-            throw new BadRequestException("Bu islem icin ADMIN veya MANAGER rol gerekir.");
+        if (role != UserRole.ADMIN && role != UserRole.MANAGER && role != UserRole.WAITER && role != UserRole.CASHIER) {
+            log.error("Yetkisiz rol erişimi: userId={}, role={}", ownerUserId, userRole);
+            throw new BadRequestException("Bu işlem için yetkiniz bulunmamaktadır (Gereken: ADMIN, MANAGER veya Personel).");
         }
     }
 
