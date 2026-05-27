@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -20,6 +21,7 @@ public class OrderEventProducer {
     @Value("${order.topic.name}")
     private String orderTopicName;
 
+    @Async
     public void sendOrderCreatedEvent(OrderCreatedEvent event) {
         try {
             String message = objectMapper.writeValueAsString(event);
@@ -27,7 +29,8 @@ public class OrderEventProducer {
             log.info("Order created event sent: {}", event.getOrderId());
         } catch (JsonProcessingException e) {
             log.error("Error serializing order event", e);
-            throw new RuntimeException("Error serializing order event", e);
+        } catch (Exception e) {
+            log.warn("Could not send Kafka event (Kafka might be down): {}", e.getMessage());
         }
     }
 }

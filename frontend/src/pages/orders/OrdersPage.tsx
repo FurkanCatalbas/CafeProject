@@ -46,8 +46,8 @@ const mapOrderListItem = (item: any): Order => ({
   status: item.status ?? 'PENDING',
   paymentStatus: item.paymentStatus ?? 'UNPAID',
   paymentMethod: item.paymentMethod ?? 'CASH',
-  userName: `Kullanıcı #${item.userId ?? '-'}`,
-  placeName: `Masa #${item.placeId ?? '-'}`,
+  userName: item.userId === 0 ? 'Anonim (QR)' : `Kullanıcı #${item.userId ?? '-'}`,
+  placeName: `MASA ${item.placeId ?? '-'}`,
   orderItems: item.orderItems ?? [],
 });
 
@@ -223,8 +223,8 @@ const OrdersPage: React.FC = () => {
         status: (order.status ?? 'PENDING') as Order['status'],
         paymentStatus: (order.paymentStatus ?? 'UNPAID') as Order['paymentStatus'],
         paymentMethod: (order.paymentMethod ?? 'CASH') as Order['paymentMethod'],
-        userName: `Kullanıcı #${order.userId ?? '-'}`,
-        placeName: `Masa #${order.placeId ?? '-'}`,
+        userName: order.userId === 0 ? 'Anonim (QR)' : `Kullanıcı #${order.userId ?? '-'}`,
+        placeName: `MASA ${order.placeId ?? '-'}`,
         orderItems: (order.orderItems ?? []).map((item) => ({
           id: item.id ?? 0,
           productId: item.productId,

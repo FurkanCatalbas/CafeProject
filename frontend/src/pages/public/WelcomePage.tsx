@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Utensils, Music, Coffee, ArrowRight, RefreshCw, AlertCircle } from 'lucide-react';
+import { useDispatch } from 'react-redux';
 import { placesService, PlaceDto } from '../../services/placesService';
 import { musicService, MusicSessionDto } from '../../services/musicService';
+import { setPlace as setStorePlace } from '../../store/slices/cartSlice';
 
 const WelcomePage: React.FC = () => {
   const { qrCode } = useParams<{ qrCode: string }>();
@@ -11,6 +13,7 @@ const WelcomePage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   useEffect(() => {
     if (qrCode) {
@@ -26,6 +29,10 @@ const WelcomePage: React.FC = () => {
       // 1. Masayı bul (Public endpoint ile)
       const placeData = await placesService.getPublicByQr(qrCode!);
       setPlace(placeData);
+      
+      if (placeData.id) {
+        dispatch(setStorePlace({ id: placeData.id, name: placeData.name }));
+      }
 
       // 2. Müzik oylama oturumunu bul (Public endpoint ile)
       try {

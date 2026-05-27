@@ -23,6 +23,8 @@ public class RouteValidator {
             "/api/places/public",
             "/product-service/api/products",
             "/api/products",
+            "/order-service/api/orders",
+            "/api/orders",
             "/eureka"
     );
 
