@@ -1,21 +1,19 @@
 package com.orderservice.services;
 
 import com.orderservice.clients.PlaceServiceClient;
-<<<<<<< Updated upstream
-import com.orderservice.clients.ProductServiceClient;
-import com.orderservice.kafka.OrderEventProducer;
-=======
 import com.orderservice.clients.ProductClientDto;
 import com.orderservice.clients.ProductServiceClient;
->>>>>>> Stashed changes
+import com.orderservice.kafka.OrderEventProducer;
 import com.orderservice.mappers.OrderItemMapper;
 import com.orderservice.mappers.OrderMapper;
 import com.orderservice.models.DashboardSummaryDto;
+import com.orderservice.models.OrderCreatedEvent;
 import com.orderservice.models.OrderDto;
 import com.orderservice.models.OrderEntity;
 import com.orderservice.models.OrderItemDto;
 import com.orderservice.models.OrderItemEntity;
 import com.orderservice.repository.OrderRepository;
+import com.wise.core.exceptions.BadRequestException;
 import com.wise.core.exceptions.ResourceNotFoundException;
 import com.wise.core.enums.RecordStatusType;
 import com.wise.core.enums.OrderStatus;
@@ -41,21 +39,17 @@ public class OrderServiceImpl implements OrderService {
     private final OrderRepository orderRepository;
     private final PlaceServiceClient placeServiceClient;
     private final ProductServiceClient productServiceClient;
+    private final OrderEventProducer orderEventProducer;
 
     @Override
     @Transactional
-<<<<<<< Updated upstream
-    public OrderDto create(OrderDto dto, Integer userId) {
+    public OrderDto create(OrderDto dto, Integer userId, String userRole, String businessCode) {
         Integer resolvedUserId = userId == null ? 0 : userId;
-        placeServiceClient.validatePlaceForOrder(dto.getPlaceId(), resolvedUserId, null);
+        placeServiceClient.validatePlaceForOrder(dto.getPlaceId(), resolvedUserId, userRole);
+        
         dto.setId(null);
         dto.setUserId(resolvedUserId);
-=======
-    public OrderDto create(OrderDto dto, Integer userId, String userRole, String businessCode) {
-        dto.setId(null);
-        dto.setUserId(userId);
         dto.setBusinessCode(normalizeBusinessCode(businessCode));
->>>>>>> Stashed changes
         dto.setOrderDate(LocalDateTime.now());
         dto.setStatus(OrderStatus.ORDER_RECEIVED);
         dto.setPaymentStatus(PaymentStatus.UNPAID);
@@ -66,7 +60,7 @@ public class OrderServiceImpl implements OrderService {
         if (dto.getOrderItems() != null && !dto.getOrderItems().isEmpty()) {
             BigDecimal totalAmount = BigDecimal.ZERO;
             for (OrderItemDto item : dto.getOrderItems()) {
-                ProductClientDto product = reserveProductStock(item, userId, userRole, dto.getBusinessCode());
+                ProductClientDto product = reserveProductStock(item, resolvedUserId, userRole, dto.getBusinessCode());
                 item.setProductName(product.getName());
                 item.setUnitPrice(product.getPrice());
                 BigDecimal itemTotal = item.getUnitPrice().multiply(BigDecimal.valueOf(item.getQuantity()));
@@ -92,7 +86,6 @@ public class OrderServiceImpl implements OrderService {
         entity = orderRepository.save(entity);
         dto.setId(entity.getId());
 
-<<<<<<< Updated upstream
         OrderCreatedEvent event = new OrderCreatedEvent();
         event.setOrderId(entity.getId());
         event.setUserId(resolvedUserId);
@@ -100,8 +93,6 @@ public class OrderServiceImpl implements OrderService {
         event.setItems(dto.getOrderItems());
         orderEventProducer.sendOrderCreatedEvent(event);
 
-=======
->>>>>>> Stashed changes
         return toDto(entity);
     }
 
@@ -285,22 +276,22 @@ public class OrderServiceImpl implements OrderService {
 
     private ProductClientDto reserveProductStock(OrderItemDto item, Integer userId, String userRole, String businessCode) {
         if (item.getProductId() == null || item.getQuantity() == null || item.getQuantity() <= 0) {
-            throw new com.wise.core.exceptions.BadRequestException("Gecerli urun ve adet bilgisi zorunludur.");
+            throw new BadRequestException("Gecerli urun ve adet bilgisi zorunludur.");
         }
 
         ProductClientDto product = productServiceClient.getById(item.getProductId());
         if (!canAccessProduct(product, userRole, businessCode)) {
-            throw new com.wise.core.exceptions.BadRequestException("Bu isletmedeki urune erisim yetkiniz yok.");
+            throw new BadRequestException("Bu isletmedeki urune erisim yetkiniz yok.");
         }
         if (Boolean.FALSE.equals(product.getIsActive())) {
-            throw new com.wise.core.exceptions.BadRequestException("Urun aktif degil: " + item.getProductId());
+            throw new BadRequestException("Urun aktif degil: " + item.getProductId());
         }
         if (product.getPrice() == null) {
-            throw new com.wise.core.exceptions.BadRequestException("Urun fiyati bulunamadi: " + item.getProductId());
+            throw new BadRequestException("Urun fiyati bulunamadi: " + item.getProductId());
         }
         int stock = product.getStock() == null ? 0 : product.getStock();
         if (stock < item.getQuantity()) {
-            throw new com.wise.core.exceptions.BadRequestException("Yetersiz stok: " + product.getName());
+            throw new BadRequestException("Yetersiz stok: " + product.getName());
         }
 
         product.setStock(stock - item.getQuantity());
@@ -310,7 +301,7 @@ public class OrderServiceImpl implements OrderService {
 
     private void ensureSameBusiness(OrderDto dto, String requesterRole, String businessCode) {
         if (!canAccess(dto, requesterRole, businessCode)) {
-            throw new com.wise.core.exceptions.BadRequestException("Bu isletmedeki siparise erisim yetkiniz yok.");
+            throw new BadRequestException("Bu isletmedeki siparise erisim yetkiniz yok.");
         }
     }
 
@@ -356,10 +347,10 @@ public class OrderServiceImpl implements OrderService {
 
         for (OrderItemDto item : dto.getOrderItems()) {
             if (item.getQuantity() == null || item.getQuantity() <= 0) {
-                throw new com.wise.core.exceptions.BadRequestException("Urun adedi pozitif olmalidir.");
+                throw new BadRequestException("Urun adedi pozitif olmalidir.");
             }
 
-            ProductServiceClient.ProductClientDto product = productServiceClient.getProductById(item.getProductId());
+            ProductClientDto product = productServiceClient.getProductById(item.getProductId());
             item.setProductName(product.getName());
             item.setUnitPrice(product.getPrice());
             item.setTotalPrice(product.getPrice().multiply(BigDecimal.valueOf(item.getQuantity())));

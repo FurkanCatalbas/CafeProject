@@ -34,15 +34,10 @@ public class OrderController {
     @PostMapping("")
     public ResponseEntity<QueryResponse<OrderDto>> create(
             @RequestBody OrderDto dto,
-<<<<<<< Updated upstream
-            @RequestHeader(value = "X-User-Id", required = false) Integer userId) {
-        OrderDto returnDto = orderService.create(dto, userId);
-=======
             @RequestHeader("X-User-Id") Integer userId,
             @RequestHeader(value = "X-User-Role", required = false) String userRole,
             @RequestHeader(value = "X-Business-Code", required = false) String businessCode) {
         OrderDto returnDto = orderService.create(dto, userId, userRole, businessCode);
->>>>>>> Stashed changes
         return ResponseEntity.status(HttpStatus.CREATED).body(createOrderResponse(returnDto));
     }
 

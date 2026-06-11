@@ -142,11 +142,7 @@ services:
 
   frontend:
     build:
-<<<<<<< Updated upstream
-      context: frontend
-=======
       context: ./frontend
->>>>>>> Stashed changes
       dockerfile: Dockerfile
       args:
         REACT_APP_API_URL: http://localhost:10101
