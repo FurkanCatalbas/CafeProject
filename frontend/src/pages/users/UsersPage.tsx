@@ -178,11 +178,6 @@ const UsersPage: React.FC = () => {
       return;
     }
 
-    if (!editUser.password) {
-      setError('Kullanıcı güncellemesi için şifre bilgisi bulunamadı.');
-      return;
-    }
-
     setIsSubmitting(true);
     setError(null);
     try {
@@ -477,7 +472,7 @@ const UsersPage: React.FC = () => {
       {showEditModal && (
         <ModalOverlay>
           <div className="bg-white border border-gray-200 rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-xl">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">Kullanıcı Düzenle</h2>
+            <h2 className="text-xl font-bold text-gray-900 mb-4">Çalışan Düzenle</h2>
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <input
@@ -511,6 +506,13 @@ const UsersPage: React.FC = () => {
                   className="input-field"
                 />
               </div>
+              <input
+                type="password"
+                placeholder="Yeni şifre (boş bırakılırsa değişmez)"
+                value={editUser.password}
+                onChange={(e) => setEditUser((prev) => ({ ...prev, password: e.target.value }))}
+                className="input-field w-full"
+              />
               <div className="grid grid-cols-2 gap-4">
                 <select
                   className="input-field"

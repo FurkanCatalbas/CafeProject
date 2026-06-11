@@ -15,6 +15,7 @@ import PlacesPage from './pages/places/PlacesPage';
 import ProductsPage from './pages/products/ProductsPage';
 import OrdersPage from './pages/orders/OrdersPage';
 import MusicPage from './pages/music/MusicPage';
+import StaffOrderPage from './pages/staff/StaffOrderPage';
 import QrMenuPage from './pages/public/QrMenuPage';
 import QrOrderPage from './pages/public/QrOrderPage';
 import WelcomePage from './pages/public/WelcomePage';
@@ -47,6 +48,7 @@ function App() {
                       <Route path="products" element={<ProductsPage />} />
                       <Route path="orders" element={<OrdersPage />} />
                       <Route path="music" element={<MusicPage />} />
+                      <Route path="staff/order" element={<StaffOrderPage />} />
                     </Routes>
                   </Layout>
                 </ProtectedRoute>
