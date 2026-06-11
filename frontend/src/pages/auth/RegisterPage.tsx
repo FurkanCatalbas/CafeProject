@@ -14,7 +14,7 @@ const RegisterPage: React.FC = () => {
     firstName: '',
     lastName: '',
     emailAddress: '',
-    roleName: 'CUSTOMER',
+    roleName: 'MANAGER',
     password: '',
     confirmPassword: '',
   });
@@ -53,25 +53,25 @@ const RegisterPage: React.FC = () => {
                   <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
                 </svg>
               </div>
-              <h1 className="text-4xl font-bold mb-4">Kafe Sistemine Katıl</h1>
-              <p className="text-xl text-blue-100">Müşteri, müdür veya yönetici olarak hesabınızı oluşturun</p>
+              <h1 className="text-4xl font-bold mb-4">Kafe Yönetim Sistemi</h1>
+              <p className="text-xl text-blue-100">Müdür hesabı oluşturun, ardından çalışanlarınızı panelden ekleyin</p>
             </div>
             <div className="space-y-4 text-blue-100">
               <div className="flex items-center space-x-3">
                 <div className="w-2 h-2 bg-white rounded-full"></div>
-                <span>Başlamak ücretsiz</span>
+                <span>Müdür olarak kayıt olun</span>
               </div>
               <div className="flex items-center space-x-3">
                 <div className="w-2 h-2 bg-white rounded-full"></div>
-                <span>Kredi kartı gerekmez</span>
+                <span>Garson ve kasiyer hesapları açın</span>
               </div>
               <div className="flex items-center space-x-3">
                 <div className="w-2 h-2 bg-white rounded-full"></div>
-                <span>7/24 müşteri desteği</span>
+                <span>Masa, sipariş ve menü yönetin</span>
               </div>
               <div className="flex items-center space-x-3">
                 <div className="w-2 h-2 bg-white rounded-full"></div>
-                <span>İstediğiniz zaman iptal edin</span>
+                <span>Çalışanlar giriş ekranından sisteme girer</span>
               </div>
             </div>
           </div>
@@ -153,23 +153,16 @@ const RegisterPage: React.FC = () => {
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Hesap Türü
-                </label>
-                <select
-                  name="roleName"
-                  value={formData.roleName}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
-                >
-                  <option value="CUSTOMER">Müşteri — Sipariş takibi ve menü görüntüleme</option>
-                  <option value="ADMIN">Yönetici — Tüm sisteme tam erişim</option>
-                  <option value="MANAGER">Müdür — Kafe operasyonlarını yönet</option>
-                </select>
-                <p className="mt-1.5 text-xs text-gray-400">
-                  Garson ve kasiyer hesapları yönetici tarafından oluşturulur.
-                </p>
+              <div className="flex items-center gap-3 bg-blue-50 border border-blue-100 rounded-lg px-4 py-3">
+                <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
+                  <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                  </svg>
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-blue-900">Müdür Hesabı</p>
+                  <p className="text-xs text-blue-600">Kafe operasyonlarını yönetin, çalışan hesapları oluşturun</p>
+                </div>
               </div>
 
               <div>

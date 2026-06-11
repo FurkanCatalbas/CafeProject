@@ -266,8 +266,8 @@ const UsersPage: React.FC = () => {
     <div className="p-6 space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Kullanıcılar</h1>
-          <p className="text-gray-600">Kafenizdeki personel ve müşterileri yönetin</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Çalışan Yönetimi</h1>
+          <p className="text-gray-600">Kafenizin garson, kasiyer ve yönetici hesaplarını yönetin</p>
         </div>
         <button
           onClick={() => setShowCreateModal(true)}
@@ -275,7 +275,7 @@ const UsersPage: React.FC = () => {
           className="btn-primary flex items-center gap-2"
         >
           <Plus className="w-5 h-5" />
-          Kullanıcı Ekle
+          Çalışan Ekle
         </button>
       </div>
 
@@ -391,7 +391,7 @@ const UsersPage: React.FC = () => {
       {showCreateModal && (
         <ModalOverlay>
           <div className="bg-white border border-gray-200 rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-xl">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">Yeni Kullanıcı Ekle</h2>
+            <h2 className="text-xl font-bold text-gray-900 mb-4">Yeni Çalışan Ekle</h2>
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <input
@@ -438,11 +438,10 @@ const UsersPage: React.FC = () => {
                   value={newUser.roleName}
                   onChange={(e) => setNewUser((prev) => ({ ...prev, roleName: e.target.value as User['roleName'] }))}
                 >
-                  <option value="ADMIN">Yönetici</option>
-                  <option value="MANAGER">Müdür</option>
                   <option value="WAITER">Garson</option>
                   <option value="CASHIER">Kasiyer</option>
-                  <option value="CUSTOMER">Müşteri</option>
+                  <option value="MANAGER">Müdür</option>
+                  <option value="ADMIN">Yönetici</option>
                 </select>
                 <select
                   className="input-field"
@@ -467,7 +466,7 @@ const UsersPage: React.FC = () => {
                   data-testid="users-submit-create"
                   className="btn-primary disabled:opacity-50"
                 >
-                  {isSubmitting ? 'Ekleniyor...' : 'Kullanıcı Ekle'}
+                  {isSubmitting ? 'Ekleniyor...' : 'Çalışan Ekle'}
                 </button>
               </div>
             </div>
@@ -518,11 +517,10 @@ const UsersPage: React.FC = () => {
                   value={editUser.roleName}
                   onChange={(e) => setEditUser((prev) => ({ ...prev, roleName: e.target.value as User['roleName'] }))}
                 >
-                  <option value="ADMIN">Yönetici</option>
-                  <option value="MANAGER">Müdür</option>
                   <option value="WAITER">Garson</option>
                   <option value="CASHIER">Kasiyer</option>
-                  <option value="CUSTOMER">Müşteri</option>
+                  <option value="MANAGER">Müdür</option>
+                  <option value="ADMIN">Yönetici</option>
                 </select>
                 <select
                   className="input-field"
