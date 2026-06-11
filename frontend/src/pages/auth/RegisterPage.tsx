@@ -53,8 +53,8 @@ const RegisterPage: React.FC = () => {
                   <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
                 </svg>
               </div>
-              <h1 className="text-4xl font-bold mb-4">Kafe Yönetimine Katıl</h1>
-              <p className="text-xl text-blue-100">Hesabınızı oluşturun ve kafenizi verimli şekilde yönetin</p>
+              <h1 className="text-4xl font-bold mb-4">Kafe Sistemine Katıl</h1>
+              <p className="text-xl text-blue-100">Müşteri, müdür veya yönetici olarak hesabınızı oluşturun</p>
             </div>
             <div className="space-y-4 text-blue-100">
               <div className="flex items-center space-x-3">
@@ -155,7 +155,7 @@ const RegisterPage: React.FC = () => {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Rol
+                  Hesap Türü
                 </label>
                 <select
                   name="roleName"
@@ -163,12 +163,13 @@ const RegisterPage: React.FC = () => {
                   onChange={handleChange}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
                 >
-                  <option value="CUSTOMER">Müşteri</option>
-                  <option value="ADMIN">Yönetici</option>
-                  <option value="MANAGER">Müdür</option>
-                  <option value="WAITER">Garson</option>
-                  <option value="CASHIER">Kasiyer</option>
+                  <option value="CUSTOMER">Müşteri — Sipariş takibi ve menü görüntüleme</option>
+                  <option value="ADMIN">Yönetici — Tüm sisteme tam erişim</option>
+                  <option value="MANAGER">Müdür — Kafe operasyonlarını yönet</option>
                 </select>
+                <p className="mt-1.5 text-xs text-gray-400">
+                  Garson ve kasiyer hesapları yönetici tarafından oluşturulur.
+                </p>
               </div>
 
               <div>

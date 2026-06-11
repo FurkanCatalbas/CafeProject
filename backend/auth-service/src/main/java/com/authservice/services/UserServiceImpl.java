@@ -33,9 +33,15 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public TokenResponse register(UserDto userDto) {
-
+        // Personel rolleri yalnızca yönetici tarafından oluşturulabilir;
+        // public kayıt sadece CUSTOMER, ADMIN ve MANAGER'a açık.
         if (userDto.getRoleName() == null) {
             userDto.setRoleName(UserRole.CUSTOMER);
+        }
+        if (userDto.getRoleName() == UserRole.WAITER || userDto.getRoleName() == UserRole.CASHIER) {
+            throw new com.wise.core.exceptions.BadRequestException(
+                "Garson ve kasiyer hesapları yönetici tarafından oluşturulmalıdır. Lütfen yöneticinizle iletişime geçin."
+            );
         }
         userDto.setPassword(passwordEncoder.encode(userDto.getPassword()));
 
