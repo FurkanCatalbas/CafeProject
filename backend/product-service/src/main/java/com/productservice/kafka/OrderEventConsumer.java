@@ -38,6 +38,10 @@ public class OrderEventConsumer {
 
                 ProductDto product = productsService.getById(productId);
                 if (product != null && product.getStock() != null) {
+                    if (product.getStock() < quantity) {
+                        log.warn("Insufficient stock for product {}: requested={}, available={} — clamping to 0",
+                                productId, quantity, product.getStock());
+                    }
                     int newStock = Math.max(0, product.getStock() - quantity);
                     product.setStock(newStock);
                     productsService.update(product);

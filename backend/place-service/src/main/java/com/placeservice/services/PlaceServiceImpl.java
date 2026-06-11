@@ -37,7 +37,11 @@ public class PlaceServiceImpl implements PlacesService {
 
     @Override
     public PlaceDto update(PlaceDto placeDto) {
-        getById(placeDto.getId());
+        PlaceEntity existing = placesRepository.findById(placeDto.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Masa bulunamadi: " + placeDto.getId()));
+        if (placeDto.getQrCode() == null || placeDto.getQrCode().isBlank()) {
+            placeDto.setQrCode(existing.getQrCode());
+        }
         PlaceEntity entity = placesRepository.save(toEntity(placeDto));
         return toDto(entity);
     }
@@ -73,7 +77,7 @@ public class PlaceServiceImpl implements PlacesService {
 
     @Override
     public PlaceDto close(Integer id) {
-        return updateStatus(id, PlaceStatus.AVAILABLE);
+        return updateStatus(id, PlaceStatus.CLOSED);
     }
 
     @Override

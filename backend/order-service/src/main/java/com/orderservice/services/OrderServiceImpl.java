@@ -89,7 +89,8 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public OrderDto update(OrderDto dto) {
-        getById(dto.getId());
+        OrderEntity existing = orderRepository.findById(dto.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Siparis bulunamadi: " + dto.getId()));
         normalizeOrderItems(dto);
 
         if (dto.getOrderItems() != null && !dto.getOrderItems().isEmpty()) {
@@ -106,11 +107,16 @@ public class OrderServiceImpl implements OrderService {
         OrderEntity entity = toEntity(dto);
         entity.setOrderItems(new ArrayList<>());
 
-        if (dto.getOrderItems() != null) {
+        if (dto.getOrderItems() != null && !dto.getOrderItems().isEmpty()) {
             for (OrderItemDto itemDto : dto.getOrderItems()) {
                 OrderItemEntity itemEntity = OrderItemMapper.INSTANCE.toEntity(itemDto);
                 itemEntity.setOrder(entity);
                 entity.getOrderItems().add(itemEntity);
+            }
+        } else {
+            for (OrderItemEntity existingItem : existing.getOrderItems()) {
+                existingItem.setOrder(entity);
+                entity.getOrderItems().add(existingItem);
             }
         }
 

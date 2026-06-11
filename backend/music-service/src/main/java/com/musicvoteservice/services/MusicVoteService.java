@@ -32,6 +32,7 @@ import com.wise.core.enums.UserRole;
 import com.wise.core.exceptions.BadRequestException;
 import com.wise.core.exceptions.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -43,6 +44,7 @@ import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class MusicVoteService {
@@ -258,7 +260,12 @@ public class MusicVoteService {
 
         long leftVotes = voteRepository.countByRoundIdAndTrackId(round.getId(), round.getLeftTrackId());
         long rightVotes = voteRepository.countByRoundIdAndTrackId(round.getId(), round.getRightTrackId());
-        Integer winnerTrackId = rightVotes > leftVotes ? round.getRightTrackId() : round.getLeftTrackId();
+        Integer winnerTrackId;
+        if (leftVotes == rightVotes) {
+            winnerTrackId = secureRandom.nextBoolean() ? round.getLeftTrackId() : round.getRightTrackId();
+        } else {
+            winnerTrackId = rightVotes > leftVotes ? round.getRightTrackId() : round.getLeftTrackId();
+        }
 
         round.setWinnerTrackId(winnerTrackId);
         round.setStatus(VoteRoundStatus.CLOSED);

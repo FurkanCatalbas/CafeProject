@@ -10,6 +10,25 @@ interface User {
   roleName: string;
 }
 
+function parseUserFromToken(token: string): User | null {
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    const u = payload?.userObject;
+    if (!u) return null;
+    const [firstName, ...rest] = (u.fullName || '').split(' ');
+    return {
+      id: parseInt(u.userId, 10),
+      username: u.username || '',
+      firstName: firstName || '',
+      lastName: rest.join(' '),
+      emailAddress: '',
+      roleName: u.role || '',
+    };
+  } catch {
+    return null;
+  }
+}
+
 interface AuthState {
   user: User | null;
   token: string | null;
@@ -89,7 +108,7 @@ const authSlice = createSlice({
       })
       .addCase(login.fulfilled, (state, action) => {
         state.loading = false;
-        state.user = null;
+        state.user = parseUserFromToken(action.payload.token);
         state.token = action.payload.token;
         state.isAuthenticated = true;
       })
@@ -103,7 +122,7 @@ const authSlice = createSlice({
       })
       .addCase(register.fulfilled, (state, action) => {
         state.loading = false;
-        state.user = null;
+        state.user = parseUserFromToken(action.payload.token);
         state.token = action.payload.token;
         state.isAuthenticated = true;
       })
