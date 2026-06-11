@@ -7,6 +7,7 @@ import {
   MapPin, 
   Package, 
   ShoppingCart, 
+  Music,
   X
 } from 'lucide-react';
 
@@ -24,6 +25,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
     { path: '/tables', icon: MapPin, label: 'Masa Yönetimi' },
     { path: '/products', icon: Package, label: 'Ürünler' },
     { path: '/orders', icon: ShoppingCart, label: 'Siparişler' },
+    { path: '/music', icon: Music, label: 'Müzik' },
   ];
 
   return (

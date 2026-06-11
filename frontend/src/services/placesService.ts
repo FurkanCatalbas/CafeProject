@@ -6,6 +6,7 @@ export interface PlaceDto {
   name: string;
   managerId: number;
   status: 'AVAILABLE' | 'OCCUPIED' | 'RESERVED' | 'CLOSED';
+  qrCode?: string;
 }
 
 const resolvePersistedPlace = async (payload: PlaceDto) => {
@@ -25,6 +26,11 @@ export const placesService = {
   
   getById: async (id: number) => {
     const response = await api.get(`/place-service/api/places/${id}`);
+    return unwrapApiData<PlaceDto>(response.data);
+  },
+
+  getPublicByQr: async (qrCode: string) => {
+    const response = await api.get(`/place-service/api/places/public/qr/${qrCode}`);
     return unwrapApiData<PlaceDto>(response.data);
   },
   

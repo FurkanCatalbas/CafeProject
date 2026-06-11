@@ -10,6 +10,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -24,6 +25,12 @@ public class PlaceServiceImpl implements PlacesService {
         if (placeDto.getStatus() == null) {
             placeDto.setStatus(PlaceStatus.AVAILABLE);
         }
+
+        // QR Kod üretimi (Eğer boş gelirse otomatik üret)
+        if (placeDto.getQrCode() == null || placeDto.getQrCode().isBlank()) {
+            placeDto.setQrCode("T-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
+        }
+
         PlaceEntity entity = placesRepository.save(toEntity(placeDto));
         return toDto(entity);
     }
@@ -67,6 +74,13 @@ public class PlaceServiceImpl implements PlacesService {
     @Override
     public PlaceDto close(Integer id) {
         return updateStatus(id, PlaceStatus.AVAILABLE);
+    }
+
+    @Override
+    public PlaceDto getByQrCode(String qrCode) {
+        return placesRepository.findByQrCode(qrCode)
+                .map(this::toDto)
+                .orElseThrow(() -> new ResourceNotFoundException("QR koda ait masa bulunamadi: " + qrCode));
     }
 
     @Override

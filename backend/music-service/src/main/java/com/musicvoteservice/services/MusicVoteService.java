@@ -193,6 +193,14 @@ public class MusicVoteService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
+    public VoteRoundDto getCurrentRound(Integer placeId, Integer ownerUserId, String userRole) {
+        requireOwner(ownerUserId, userRole);
+        return voteRoundRepository.findFirstByPlaceIdAndStatusOrderByRoundNumberDesc(placeId, VoteRoundStatus.ACTIVE)
+                .map(this::toRoundDto)
+                .orElse(null);
+    }
+
     @Transactional
     public VoteRoundDto startNextRound(Integer placeId, Integer ownerUserId, String userRole) {
         requireOwner(ownerUserId, userRole);
@@ -285,6 +293,24 @@ public class MusicVoteService {
         return dto;
     }
 
+    @Transactional(readOnly = true)
+    public PublicVoteSessionDto getPublicSessionByPlaceId(Integer placeId) {
+        MusicVenueSessionEntity session = musicVenueSessionRepository.findByPlaceId(placeId)
+                .orElseThrow(() -> new ResourceNotFoundException("Mekan için oylama oturumu bulunamadı."));
+        
+        if (!Boolean.TRUE.equals(session.getActive())) {
+            throw new BadRequestException("Bu mekanın oylaması şu an aktif değil.");
+        }
+
+        PublicVoteSessionDto dto = new PublicVoteSessionDto();
+        dto.setPlaceId(session.getPlaceId());
+        dto.setQrCode(session.getQrCode());
+        dto.setPlaylistName(session.getPlaylistName());
+        voteRoundRepository.findFirstByPlaceIdAndStatusOrderByRoundNumberDesc(session.getPlaceId(), VoteRoundStatus.ACTIVE)
+                .ifPresent(round -> dto.setCurrentRound(toRoundDto(round)));
+        return dto;
+    }
+
     @Transactional
     public VoteResultDto vote(String qrCode, VoteRequest request, String remoteAddress, String userAgent) {
         if (request == null || request.getRoundId() == null || request.getTrackId() == null) {
@@ -354,21 +380,33 @@ public class MusicVoteService {
         return connection.getAccessToken();
     }
 
-    private MusicVenueSessionEntity getOrCreateSessionEntity(Integer placeId, Integer ownerUserId) {
+    private synchronized MusicVenueSessionEntity getOrCreateSessionEntity(Integer placeId, Integer ownerUserId) {
         if (placeId == null) {
             throw new BadRequestException("Mekan id zorunludur.");
         }
-        return musicVenueSessionRepository.findByPlaceId(placeId)
-                .orElseGet(() -> {
-                    MusicVenueSessionEntity session = new MusicVenueSessionEntity();
-                    session.setPlaceId(placeId);
-                    session.setOwnerUserId(ownerUserId);
-                    session.setQrCode(uniqueQrCode());
-                    session.setActive(true);
-                    session.setCurrentTrackOffset(0);
-                    session.setPublicVotingUrl(publicVotingUrl(session.getQrCode()));
-                    return musicVenueSessionRepository.save(session);
-                });
+        
+        // Önce mevcut olanı bulmaya çalış
+        java.util.Optional<MusicVenueSessionEntity> existing = musicVenueSessionRepository.findByPlaceId(placeId);
+        if (existing.isPresent()) {
+            return existing.get();
+        }
+
+        // Yoksa oluştur
+        try {
+            MusicVenueSessionEntity session = new MusicVenueSessionEntity();
+            session.setPlaceId(placeId);
+            session.setOwnerUserId(ownerUserId);
+            session.setQrCode(uniqueQrCode());
+            session.setActive(true);
+            session.setCurrentTrackOffset(0);
+            session.setPublicVotingUrl(publicVotingUrl(session.getQrCode()));
+            
+            return musicVenueSessionRepository.saveAndFlush(session);
+        } catch (Exception e) {
+            // Eğer o sırada başka bir istek eklediyse veritabanına tekrar bak
+            return musicVenueSessionRepository.findByPlaceId(placeId)
+                    .orElseThrow(() -> new BadRequestException("Muzik oturumu olusturulamadi veya alinamadi."));
+        }
     }
 
     private MusicVenueSessionEntity getSessionByPlace(Integer placeId) {
@@ -446,12 +484,17 @@ public class MusicVoteService {
     }
 
     private void requireOwner(Integer ownerUserId, String userRole) {
-        if (ownerUserId == null) {
-            throw new BadRequestException("Kullanici kimligi bulunamadi.");
+        if (ownerUserId == null || ownerUserId == 0) {
+            log.warn("Auth context eksik veya anonim kullanıcı: userId={}, role={}", ownerUserId, userRole);
+            // Geliştirme/Test aşamasında veya anonim erişime izin verilen durumlarda hata fırlatmak yerine devam edebiliriz
+            // Veya daha açıklayıcı bir hata mesajı dönebiliriz.
+            throw new BadRequestException("İşlem için geçerli bir kullanıcı oturumu gereklidir (UserId eksik).");
         }
+        
         UserRole role = resolveRole(userRole);
-        if (role != UserRole.ADMIN && role != UserRole.MANAGER) {
-            throw new BadRequestException("Bu islem icin ADMIN veya MANAGER rol gerekir.");
+        if (role != UserRole.ADMIN && role != UserRole.MANAGER && role != UserRole.WAITER && role != UserRole.CASHIER) {
+            log.error("Yetkisiz rol erişimi: userId={}, role={}", ownerUserId, userRole);
+            throw new BadRequestException("Bu işlem için yetkiniz bulunmamaktadır (Gereken: ADMIN, MANAGER veya Personel).");
         }
     }
 

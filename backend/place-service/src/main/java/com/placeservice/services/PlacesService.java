@@ -13,5 +13,6 @@ public interface PlacesService {
     List<PlaceDto> getByStatus(PlaceStatus status);
     PlaceDto updateStatus(Integer id, PlaceStatus status);
     PlaceDto close(Integer id);
+    PlaceDto getByQrCode(String qrCode);
     void delete(Integer id);
 }

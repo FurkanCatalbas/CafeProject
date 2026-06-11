@@ -95,6 +95,14 @@ public class MusicVoteController {
         return ResponseEntity.ok(list(musicVoteService.getTracks(placeId, userId, userRole)));
     }
 
+    @GetMapping("/venues/{placeId}/rounds/current")
+    public ResponseEntity<QueryResponse<VoteRoundDto>> currentRound(
+            @PathVariable("placeId") Integer placeId,
+            @RequestHeader("X-User-Id") Integer userId,
+            @RequestHeader("X-User-Role") String userRole) {
+        return ResponseEntity.ok(single(musicVoteService.getCurrentRound(placeId, userId, userRole)));
+    }
+
     @PostMapping("/venues/{placeId}/rounds/start")
     public ResponseEntity<QueryResponse<VoteRoundDto>> startRound(
             @PathVariable("placeId") Integer placeId,
@@ -115,6 +123,11 @@ public class MusicVoteController {
     @GetMapping("/public/{qrCode}")
     public ResponseEntity<QueryResponse<PublicVoteSessionDto>> publicSession(@PathVariable("qrCode") String qrCode) {
         return ResponseEntity.ok(single(musicVoteService.getPublicSession(qrCode)));
+    }
+
+    @GetMapping("/public/venue/{placeId}")
+    public ResponseEntity<QueryResponse<PublicVoteSessionDto>> publicSessionByPlaceId(@PathVariable("placeId") Integer placeId) {
+        return ResponseEntity.ok(single(musicVoteService.getPublicSessionByPlaceId(placeId)));
     }
 
     @PostMapping("/public/{qrCode}/vote")

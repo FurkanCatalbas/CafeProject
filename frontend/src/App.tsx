@@ -14,8 +14,12 @@ import UsersPage from './pages/users/UsersPage';
 import PlacesPage from './pages/places/PlacesPage';
 import ProductsPage from './pages/products/ProductsPage';
 import OrdersPage from './pages/orders/OrdersPage';
+import MusicPage from './pages/music/MusicPage';
 import QrMenuPage from './pages/public/QrMenuPage';
 import QrOrderPage from './pages/public/QrOrderPage';
+import WelcomePage from './pages/public/WelcomePage';
+import PublicMenuPage from './pages/public/PublicMenuPage';
+import PublicMusicVotePage from './pages/public/PublicMusicVotePage';
 
 function App() {
   return (
@@ -28,6 +32,9 @@ function App() {
               <Route path="/register" element={<RegisterPage />} />
               <Route path="/qr-menu/:placeId" element={<QrMenuPage />} />
               <Route path="/qr-order/:placeId" element={<QrOrderPage />} />
+              <Route path="/welcome/:qrCode" element={<WelcomePage />} />
+              <Route path="/menu" element={<PublicMenuPage />} />
+              <Route path="/music-vote/:qrCode" element={<PublicMusicVotePage />} />
               <Route path="/*" element={
                 <ProtectedRoute>
                   <Layout>
@@ -39,6 +46,7 @@ function App() {
                       <Route path="places" element={<Navigate to="/tables" replace />} />
                       <Route path="products" element={<ProductsPage />} />
                       <Route path="orders" element={<OrdersPage />} />
+                      <Route path="music" element={<MusicPage />} />
                     </Routes>
                   </Layout>
                 </ProtectedRoute>
