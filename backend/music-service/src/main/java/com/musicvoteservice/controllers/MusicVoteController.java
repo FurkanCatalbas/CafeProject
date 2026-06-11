@@ -68,6 +68,15 @@ public class MusicVoteController {
         return ResponseEntity.ok(single(musicVoteService.getSpotifyConnectionStatus(placeId, userId, userRole)));
     }
 
+    @DeleteMapping("/venues/{placeId}/spotify/connection")
+    public ResponseEntity<QueryResponse<Void>> deleteSpotifyConnection(
+            @PathVariable("placeId") Integer placeId,
+            @RequestHeader("X-User-Id") Integer userId,
+            @RequestHeader("X-User-Role") String userRole) {
+        musicVoteService.disconnectSpotify(placeId, userId, userRole);
+        return ResponseEntity.ok(single(null));
+    }
+
     @GetMapping("/venues/{placeId}/spotify/playlists")
     public ResponseEntity<QueryResponses<SpotifyPlaylistDto>> playlists(
             @PathVariable("placeId") Integer placeId,

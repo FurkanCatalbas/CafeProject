@@ -19,4 +19,6 @@ public interface VoteRoundRepository extends JpaRepository<VoteRoundEntity, Inte
     List<VoteRoundEntity> findByPlaceId(Integer placeId);
 
     void deleteByPlaceId(Integer placeId);
+
+    List<VoteRoundEntity> findAllByStatusAndAutoTransitionTrueAndTargetTransitionAtBefore(VoteRoundStatus status, java.time.LocalDateTime time);
 }

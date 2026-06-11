@@ -71,6 +71,11 @@ export const musicService = {
     return unwrapApiData<SpotifyPlaylistDto[]>(response.data);
   },
 
+  disconnectSpotify: async (placeId: number) => {
+    const response = await api.delete(`/music-service/api/music-votes/venues/${placeId}/spotify/connection`);
+    return unwrapApiData<any>(response.data);
+  },
+
   getOrCreateSession: async (placeId: number) => {
     const response = await api.get(`/music-service/api/music-votes/venues/${placeId}`);
     return unwrapApiData<MusicSessionDto>(response.data);

@@ -45,4 +45,10 @@ public class VoteRoundEntity extends BaseEntity {
 
     @Column(name = "CLOSED_AT")
     private LocalDateTime closedAt;
+
+    @Column(name = "AUTO_TRANSITION")
+    private Boolean autoTransition = false;
+
+    @Column(name = "TARGET_TRANSITION_AT")
+    private LocalDateTime targetTransitionAt;
 }

@@ -33,6 +33,7 @@ import com.wise.core.exceptions.BadRequestException;
 import com.wise.core.exceptions.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -97,7 +98,8 @@ public class MusicVoteService {
         JsonNode profile = spotifyClient.getCurrentUser(tokenResponse.getAccessToken());
 
         SpotifyConnectionEntity connection = spotifyConnectionRepository.findByPlaceIdAndOwnerUserId(stateEntity.getPlaceId(), stateEntity.getOwnerUserId())
-                .orElseGet(SpotifyConnectionEntity::new);
+                .orElse(new SpotifyConnectionEntity());
+        
         connection.setOwnerUserId(stateEntity.getOwnerUserId());
         connection.setPlaceId(stateEntity.getPlaceId());
         connection.setSpotifyUserId(text(profile.path("id")));
@@ -108,7 +110,8 @@ public class MusicVoteService {
         connection.setScope(tokenResponse.getScope());
         connection.setTokenExpiresAt(LocalDateTime.now().plusSeconds(tokenResponse.getExpiresIn() == null ? 3600 : tokenResponse.getExpiresIn()));
         connection.setConnectedAt(LocalDateTime.now());
-        connection = spotifyConnectionRepository.save(connection);
+        
+        connection = spotifyConnectionRepository.saveAndFlush(connection);
 
         stateEntity.setUsed(true);
         spotifyOAuthStateRepository.save(stateEntity);
@@ -128,6 +131,26 @@ public class MusicVoteService {
             status.setTokenExpiresAt(connection.getTokenExpiresAt());
         });
         return status;
+    }
+
+    @Transactional
+    public void disconnectSpotify(Integer placeId, Integer ownerUserId, String userRole) {
+        requireOwner(ownerUserId, userRole);
+        spotifyConnectionRepository.findByPlaceIdAndOwnerUserId(placeId, ownerUserId).ifPresent(connection -> {
+            spotifyConnectionRepository.delete(connection);
+            
+            // Ayrıca mevcut oturumun playlist bilgilerini temizleyelim
+            musicVenueSessionRepository.findByPlaceIdAndOwnerUserId(placeId, ownerUserId).ifPresent(session -> {
+                session.setSelectedPlaylistId(null);
+                session.setPlaylistName(null);
+                session.setActive(false);
+                musicVenueSessionRepository.save(session);
+            });
+            
+            // Oylamaları ve parçaları da temizle
+            clearRoundsAndVotes(placeId);
+            musicTrackRepository.deleteByPlaceId(placeId);
+        });
     }
 
     @Transactional
@@ -163,7 +186,14 @@ public class MusicVoteService {
 
         clearRoundsAndVotes(placeId);
         musicTrackRepository.deleteByPlaceId(placeId);
+        musicTrackRepository.flush(); // Değişiklikleri hemen yansıt
+
+        java.util.Set<String> processedUris = new java.util.HashSet<>();
         for (TrackDto track : tracks) {
+            if (track.getSpotifyUri() == null || processedUris.contains(track.getSpotifyUri())) {
+                continue;
+            }
+            
             MusicTrackEntity entity = new MusicTrackEntity();
             entity.setPlaceId(placeId);
             entity.setPlaylistId(request.getPlaylistId());
@@ -177,6 +207,7 @@ public class MusicVoteService {
             entity.setPlaylistPosition(track.getPlaylistPosition());
             entity.setActive(true);
             musicTrackRepository.save(entity);
+            processedUris.add(track.getSpotifyUri());
         }
 
         session.setSelectedPlaylistId(request.getPlaylistId());
@@ -206,6 +237,10 @@ public class MusicVoteService {
     @Transactional
     public VoteRoundDto startNextRound(Integer placeId, Integer ownerUserId, String userRole) {
         requireOwner(ownerUserId, userRole);
+        return startNextRoundInternal(placeId, ownerUserId);
+    }
+
+    private VoteRoundDto startNextRoundInternal(Integer placeId, Integer ownerUserId) {
         MusicVenueSessionEntity session = getSessionByPlace(placeId);
 
         voteRoundRepository.findFirstByPlaceIdAndStatusOrderByRoundNumberDesc(placeId, VoteRoundStatus.ACTIVE)
@@ -237,6 +272,25 @@ public class MusicVoteService {
                 .map(round -> round.getRoundNumber() + 1)
                 .orElse(1);
 
+        // Spotify durumuna göre geçiş süresi belirle
+        LocalDateTime targetTransitionAt = LocalDateTime.now().plusMinutes(3); // Varsayılan: 3 dk
+        try {
+            SpotifyConnectionEntity connection = spotifyConnectionRepository.findByPlaceIdAndOwnerUserId(placeId, ownerUserId).orElse(null);
+            if (connection != null) {
+                JsonNode playback = spotifyClient.getPlaybackState(validAccessToken(connection));
+                if (playback.has("is_playing") && playback.get("is_playing").asBoolean()) {
+                    long duration = playback.path("item").path("duration_ms").asLong(0);
+                    long progress = playback.path("progress_ms").asLong(0);
+                    if (duration > progress) {
+                        // Şarkı bitimine 2 saniye kala tetikle
+                        targetTransitionAt = LocalDateTime.now().plusNanos((duration - progress + 2000) * 1_000_000L);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            log.warn("Spotify calma durumu alinirken hata olustu, 3 dk varsayilanina donuluyor: {}", e.getMessage());
+        }
+
         VoteRoundEntity round = new VoteRoundEntity();
         round.setPlaceId(placeId);
         round.setQrCode(session.getQrCode());
@@ -244,6 +298,8 @@ public class MusicVoteService {
         round.setLeftTrackId(left.getId());
         round.setRightTrackId(right.getId());
         round.setStatus(VoteRoundStatus.ACTIVE);
+        round.setAutoTransition(true);
+        round.setTargetTransitionAt(targetTransitionAt);
         round = voteRoundRepository.save(round);
 
         session.setCurrentTrackOffset((offset + 2) % tracks.size());
@@ -252,9 +308,39 @@ public class MusicVoteService {
         return toRoundDto(round);
     }
 
+    @Scheduled(fixedDelay = 10000) // 10 saniyede bir kontrol et
+    public void processAutoTransitions() {
+        LocalDateTime now = LocalDateTime.now();
+        List<VoteRoundEntity> roundsToClose = voteRoundRepository.findAllByStatusAndAutoTransitionTrueAndTargetTransitionAtBefore(
+                VoteRoundStatus.ACTIVE, now);
+
+        for (VoteRoundEntity round : roundsToClose) {
+            try {
+                log.info("Otomatik gecis tetikleniyor: Mekan {}, Tur {}", round.getPlaceId(), round.getRoundNumber());
+                
+                // Mekan sahibini bul
+                MusicVenueSessionEntity session = musicVenueSessionRepository.findByPlaceId(round.getPlaceId()).orElse(null);
+                if (session == null || session.getOwnerUserId() == null) continue;
+
+                // Oylamayı kapat ve kazananı çal
+                closeCurrentRoundAndPlayWinnerInternal(round.getPlaceId(), null, session.getOwnerUserId());
+                
+                // Yeni turu başlat
+                startNextRoundInternal(round.getPlaceId(), session.getOwnerUserId());
+                
+            } catch (Exception e) {
+                log.error("Otomatik gecis sirasinda hata: Mekan {}, Hata: {}", round.getPlaceId(), e.getMessage());
+            }
+        }
+    }
+
     @Transactional
     public VoteRoundDto closeCurrentRoundAndPlayWinner(Integer placeId, CloseRoundRequest request, Integer ownerUserId, String userRole) {
         requireOwner(ownerUserId, userRole);
+        return closeCurrentRoundAndPlayWinnerInternal(placeId, request, ownerUserId);
+    }
+
+    private VoteRoundDto closeCurrentRoundAndPlayWinnerInternal(Integer placeId, CloseRoundRequest request, Integer ownerUserId) {
         VoteRoundEntity round = voteRoundRepository.findFirstByPlaceIdAndStatusOrderByRoundNumberDesc(placeId, VoteRoundStatus.ACTIVE)
                 .orElseThrow(() -> new ResourceNotFoundException("Aktif oylama turu bulunamadi."));
 

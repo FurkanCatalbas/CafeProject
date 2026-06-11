@@ -20,7 +20,8 @@ import {
   Users,
   Settings,
   XCircle,
-  Download
+  Download,
+  LogOut
 } from 'lucide-react';
 
 const spotifyStatusCacheKey = (placeId: number) => `music.spotifyStatus.${placeId}`;
@@ -123,6 +124,29 @@ const MusicPage: React.FC = () => {
       }
     } catch (err) {
       alert('Spotify bağlantısı başlatılamadı.');
+    }
+  };
+
+  const handleDisconnectSpotify = async () => {
+    if (!window.confirm('Spotify bağlantısını kesmek istediğinize emin misiniz? Bu işlem mevcut çalma listesi ve oylama verilerini temizleyecektir.')) {
+      return;
+    }
+
+    setActionLoading(true);
+    try {
+      await musicService.disconnectSpotify(placeId);
+      sessionStorage.removeItem(spotifyStatusCacheKey(placeId));
+      setSpotifyStatus({ connected: false });
+      setSession(null);
+      setPlaylists([]);
+      setTracks([]);
+      setCurrentRound(null);
+      alert('Spotify bağlantısı başarıyla kesildi.');
+      await loadInitialData();
+    } catch (err: any) {
+      alert(err.response?.data?.message || 'Bağlantı kesilemedi.');
+    } finally {
+      setActionLoading(false);
     }
   };
 
@@ -272,6 +296,13 @@ const MusicPage: React.FC = () => {
                     <p className="font-bold text-slate-900">{spotifyStatus.displayName || spotifyStatus.spotifyDisplayName}</p>
                     <p className="text-[10px] text-slate-400 uppercase font-bold tracking-tighter">Bağlı Hesap</p>
                   </div>
+                  <button
+                    onClick={handleDisconnectSpotify}
+                    disabled={actionLoading}
+                    className="w-full flex items-center justify-center gap-2 bg-red-50 text-red-600 hover:bg-red-100 px-4 py-2.5 rounded-xl font-bold transition-all text-xs border border-red-100"
+                  >
+                    <LogOut className="h-4 w-4" /> Bağlantıyı Kes
+                  </button>
                 </div>
               ) : (
                 <div className="space-y-4">

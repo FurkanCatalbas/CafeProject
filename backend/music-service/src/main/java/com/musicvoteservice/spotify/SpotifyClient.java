@@ -213,6 +213,20 @@ public class SpotifyClient {
         exchange(accessToken, HttpMethod.PUT, url, Map.of("uris", List.of(spotifyUri)));
     }
 
+    public JsonNode getPlaybackState(String accessToken) {
+        try {
+            return exchange(accessToken, HttpMethod.GET, API_BASE_URL + "/me/player", null);
+        } catch (BadRequestException e) {
+            // Spotify 204 No Content döndüğünde RestTemplate hata fırlatabilir veya exchange metodumuz 
+            // bunu 400 gibi algılayabilir (eğer RestClientResponseException ise).
+            // Aslında exchange metodumuz RestClientResponseException yakalıyor.
+            if (e.getMessage().contains("204")) {
+                return com.fasterxml.jackson.databind.node.NullNode.getInstance();
+            }
+            throw e;
+        }
+    }
+
     private SpotifyTokenResponse requestToken(MultiValueMap<String, String> form) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
