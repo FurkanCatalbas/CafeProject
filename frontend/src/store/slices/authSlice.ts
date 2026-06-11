@@ -8,6 +8,9 @@ interface User {
   lastName: string;
   emailAddress: string;
   roleName: string;
+  role?: string;
+  businessCode?: string;
+  businessName?: string;
 }
 
 interface AuthState {
@@ -18,10 +21,35 @@ interface AuthState {
   error: string | null;
 }
 
+const decodeTokenUser = (token: string | null): User | null => {
+  if (!token) return null;
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1] || ''));
+    const userObject = payload?.userObject;
+    if (!userObject) return null;
+    const [firstName = '', ...lastNameParts] = String(userObject.fullName || '').split(' ');
+    return {
+      id: Number(userObject.userId ?? 0),
+      username: userObject.username ?? '',
+      firstName,
+      lastName: lastNameParts.join(' '),
+      emailAddress: '',
+      roleName: userObject.role ?? 'CUSTOMER',
+      role: userObject.role ?? 'CUSTOMER',
+      businessCode: userObject.businessCode ?? '',
+      businessName: userObject.businessName ?? '',
+    };
+  } catch {
+    return null;
+  }
+};
+
+const persistedToken = localStorage.getItem('token');
+
 const initialState: AuthState = {
-  user: null,
-  token: localStorage.getItem('token'),
-  isAuthenticated: !!localStorage.getItem('token'),
+  user: decodeTokenUser(persistedToken),
+  token: persistedToken,
+  isAuthenticated: !!persistedToken,
   loading: false,
   error: null,
 };
@@ -89,7 +117,7 @@ const authSlice = createSlice({
       })
       .addCase(login.fulfilled, (state, action) => {
         state.loading = false;
-        state.user = null;
+        state.user = decodeTokenUser(action.payload.token);
         state.token = action.payload.token;
         state.isAuthenticated = true;
       })
@@ -103,7 +131,7 @@ const authSlice = createSlice({
       })
       .addCase(register.fulfilled, (state, action) => {
         state.loading = false;
-        state.user = null;
+        state.user = decodeTokenUser(action.payload.token);
         state.token = action.payload.token;
         state.isAuthenticated = true;
       })

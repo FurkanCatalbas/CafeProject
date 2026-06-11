@@ -11,6 +11,8 @@ import {
   Banknote,
 } from 'lucide-react';
 import { ordersService } from '../../services/ordersService';
+import { placesService, PlaceDto } from '../../services/placesService';
+import { productsService, ProductDto } from '../../services/productsService';
 import ModalOverlay from '../../components/common/ModalOverlay';
 import { formatTryCurrency } from '../../utils/formatTryCurrency';
 
@@ -53,6 +55,8 @@ const mapOrderListItem = (item: any): Order => ({
 
 const OrdersPage: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
+  const [places, setPlaces] = useState<PlaceDto[]>([]);
+  const [products, setProducts] = useState<ProductDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -73,9 +77,7 @@ const OrdersPage: React.FC = () => {
     paymentMethod: 'CASH' as Order['paymentMethod'],
     note: '',
     productId: '',
-    productName: '',
     quantity: '1',
-    unitPrice: '',
   });
 
   const loadOrders = useCallback(async () => {
@@ -88,6 +90,19 @@ const OrdersPage: React.FC = () => {
       setError(e?.response?.data?.message || 'Siparişler backend tarafından alınamadı.');
     } finally {
       setLoading(false);
+    }
+  }, []);
+
+  const loadOrderOptions = useCallback(async () => {
+    try {
+      const [placeData, productData] = await Promise.all([
+        placesService.getAll(),
+        productsService.getAll(),
+      ]);
+      setPlaces(placeData || []);
+      setProducts((productData || []).filter((product) => product.isActive && Number(product.stock ?? 0) > 0));
+    } catch (e: any) {
+      setError(e?.response?.data?.message || 'Masa ve ürün listeleri alınamadı.');
     }
   }, []);
 
@@ -117,7 +132,8 @@ const OrdersPage: React.FC = () => {
 
   useEffect(() => {
     loadOrders();
-  }, [loadOrders]);
+    loadOrderOptions();
+  }, [loadOrders, loadOrderOptions]);
 
   const resetNewOrder = () => {
     setNewOrder({
@@ -125,9 +141,7 @@ const OrdersPage: React.FC = () => {
       paymentMethod: 'CASH',
       note: '',
       productId: '',
-      productName: '',
       quantity: '1',
-      unitPrice: '',
     });
   };
 
@@ -139,27 +153,28 @@ const OrdersPage: React.FC = () => {
 
   const handleCreateOrder = async () => {
     const placeId = Number(newOrder.placeId);
-    const hasItemData = Boolean(newOrder.productId || newOrder.productName || newOrder.unitPrice);
     const productId = Number(newOrder.productId);
     const quantity = Number(newOrder.quantity);
-    const unitPrice = Number(newOrder.unitPrice);
+    const selectedProduct = products.find((product) => product.id === productId);
+    const unitPrice = Number(selectedProduct?.price ?? NaN);
 
     if (!Number.isFinite(placeId) || placeId <= 0) {
-      setError('Sipariş oluşturmak için geçerli bir masa numarası girin.');
+      setError('Sipariş oluşturmak için listeden bir masa seçin.');
       return;
     }
 
-    if (
-      hasItemData &&
-      (!Number.isFinite(productId) ||
-        productId <= 0 ||
-        !newOrder.productName.trim() ||
-        !Number.isFinite(quantity) ||
-        quantity <= 0 ||
-        !Number.isFinite(unitPrice) ||
-        unitPrice < 0)
-    ) {
-      setError('Ürün satırı girildiyse ürün numarası, ad, adet ve birim fiyat zorunludur.');
+    if (!selectedProduct || !Number.isFinite(productId) || productId <= 0) {
+      setError('Sipariş oluşturmak için stoktaki ürünlerden bir ürün seçin.');
+      return;
+    }
+
+    if (!Number.isFinite(quantity) || quantity <= 0 || quantity > Number(selectedProduct.stock ?? 0)) {
+      setError('Adet, seçilen ürünün stok miktarını aşmayacak şekilde girilmelidir.');
+      return;
+    }
+
+    if (!Number.isFinite(unitPrice) || unitPrice < 0) {
+      setError('Seçilen ürünün geçerli bir fiyatı yok.');
       return;
     }
 
@@ -170,22 +185,20 @@ const OrdersPage: React.FC = () => {
         userId: 0,
         placeId,
         orderDate: new Date().toISOString(),
-        totalAmount: 0,
+        totalAmount: quantity * unitPrice,
         status: 'PENDING',
         paymentStatus: 'UNPAID',
         paymentMethod: newOrder.paymentMethod,
         note: newOrder.note.trim() || undefined,
-        orderItems: hasItemData
-          ? [
-              {
-                productId,
-                productName: newOrder.productName.trim(),
-                quantity,
-                unitPrice,
-                totalPrice: quantity * unitPrice,
-              },
-            ]
-          : [],
+        orderItems: [
+          {
+            productId,
+            productName: selectedProduct.name,
+            quantity,
+            unitPrice,
+            totalPrice: quantity * unitPrice,
+          },
+        ],
       });
       await loadOrders();
       closeCreateModal();
@@ -357,6 +370,13 @@ const OrdersPage: React.FC = () => {
     return matchesSearch && matchesStatus;
   });
 
+  const selectedProduct = products.find((product) => product.id === Number(newOrder.productId));
+  const selectedProductPrice = Number(selectedProduct?.price ?? 0);
+  const selectedQuantity = Number(newOrder.quantity);
+  const newOrderTotal = selectedProduct && Number.isFinite(selectedQuantity)
+    ? selectedProductPrice * selectedQuantity
+    : 0;
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -522,14 +542,18 @@ const OrdersPage: React.FC = () => {
             <h2 className="text-xl font-bold text-gray-900 mb-4">Yeni Sipariş Oluştur</h2>
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
-                <input
-                  type="number"
-                  min={1}
-                  placeholder="Masa numarası"
+                <select
                   value={newOrder.placeId}
                   onChange={(e) => setNewOrder((prev) => ({ ...prev, placeId: e.target.value }))}
                   className="input-field"
-                />
+                >
+                  <option value="">Masa seçin</option>
+                  {places.map((place) => (
+                    <option key={place.id} value={place.id}>
+                      {place.name} ({place.status})
+                    </option>
+                  ))}
+                </select>
                 <select
                   className="input-field"
                   value={newOrder.paymentMethod}
@@ -544,39 +568,35 @@ const OrdersPage: React.FC = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-2">Sipariş Kalemleri</label>
                 <div className="space-y-2">
                   <div className="flex flex-wrap gap-2">
-                    <input
-                      type="number"
-                      min={1}
-                      placeholder="Ürün numarası"
+                    <select
                       value={newOrder.productId}
                       onChange={(e) => setNewOrder((prev) => ({ ...prev, productId: e.target.value }))}
-                      className="input-field w-24"
-                    />
-                    <input
-                      type="text"
-                      placeholder="Ürün Adı"
-                      value={newOrder.productName}
-                      onChange={(e) => setNewOrder((prev) => ({ ...prev, productName: e.target.value }))}
-                      className="input-field flex-1"
-                    />
+                      className="input-field min-w-[220px] flex-1"
+                    >
+                      <option value="">Stoktaki ürünlerden seçin</option>
+                      {products.map((product) => (
+                        <option key={product.id} value={product.id}>
+                          {product.name} - {formatTryCurrency(product.price)} / Stok: {product.stock}
+                        </option>
+                      ))}
+                    </select>
                     <input
                       type="number"
                       placeholder="Adet"
                       min={1}
+                      max={selectedProduct?.stock ?? undefined}
                       value={newOrder.quantity}
                       onChange={(e) => setNewOrder((prev) => ({ ...prev, quantity: e.target.value }))}
                       className="input-field w-20"
                     />
-                    <input
-                      type="number"
-                      placeholder="Birim fiyat (₺)"
-                      min={0}
-                      step="0.01"
-                      value={newOrder.unitPrice}
-                      onChange={(e) => setNewOrder((prev) => ({ ...prev, unitPrice: e.target.value }))}
-                      className="input-field w-24"
-                    />
                   </div>
+                  <div className="rounded-lg bg-gray-50 px-4 py-3 text-sm text-gray-700">
+                    <div>Birim fiyat: <span className="font-semibold">{selectedProduct ? formatTryCurrency(selectedProductPrice) : '-'}</span></div>
+                    <div>Toplam: <span className="font-semibold">{selectedProduct ? formatTryCurrency(newOrderTotal) : '-'}</span></div>
+                  </div>
+                  {products.length === 0 && (
+                    <p className="text-sm text-amber-700">Stokta aktif ürün bulunamadı. Önce ürün ekleyin veya stok güncelleyin.</p>
+                  )}
                 </div>
               </div>
               <textarea
@@ -595,7 +615,7 @@ const OrdersPage: React.FC = () => {
                 </button>
                 <button
                   onClick={handleCreateOrder}
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || places.length === 0 || products.length === 0}
                   className="btn-primary disabled:opacity-50"
                 >
                   {isSubmitting ? 'Oluşturuluyor...' : 'Sipariş Oluştur'}

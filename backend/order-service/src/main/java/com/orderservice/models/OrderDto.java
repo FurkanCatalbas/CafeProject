@@ -27,5 +27,6 @@ public class OrderDto extends BaseDto {
     private PaymentStatus paymentStatus;
     private PaymentMethod paymentMethod;
     private String note;
+    private String businessCode;
     private List<OrderItemDto> orderItems;
 }

@@ -20,6 +20,18 @@ import QrOrderPage from './pages/public/QrOrderPage';
 import WelcomePage from './pages/public/WelcomePage';
 import PublicMenuPage from './pages/public/PublicMenuPage';
 import PublicMusicVotePage from './pages/public/PublicMusicVotePage';
+import { useAuth } from './contexts/AuthContext';
+
+const canViewDashboard = ['ADMIN', 'MANAGER'];
+const canManage = ['MANAGER'];
+const canOperate = ['MANAGER', 'WAITER', 'CASHIER'];
+const canViewProducts = ['MANAGER', 'WAITER', 'CASHIER', 'CUSTOMER'];
+
+const DefaultRedirect = () => {
+  const { user } = useAuth();
+  const role = user?.roleName || user?.role;
+  return <Navigate to={canViewDashboard.includes(role) ? '/dashboard' : '/orders'} replace />;
+};
 
 function App() {
   return (
@@ -39,14 +51,14 @@ function App() {
                 <ProtectedRoute>
                   <Layout>
                     <Routes>
-                      <Route index element={<Navigate to="/dashboard" replace />} />
-                      <Route path="dashboard" element={<DashboardPage />} />
-                      <Route path="users" element={<UsersPage />} />
-                      <Route path="tables" element={<PlacesPage />} />
+                      <Route index element={<DefaultRedirect />} />
+                      <Route path="dashboard" element={<ProtectedRoute allowedRoles={canViewDashboard}><DashboardPage /></ProtectedRoute>} />
+                      <Route path="users" element={<ProtectedRoute allowedRoles={canManage}><UsersPage /></ProtectedRoute>} />
+                      <Route path="tables" element={<ProtectedRoute allowedRoles={canOperate}><PlacesPage /></ProtectedRoute>} />
                       <Route path="places" element={<Navigate to="/tables" replace />} />
-                      <Route path="products" element={<ProductsPage />} />
-                      <Route path="orders" element={<OrdersPage />} />
-                      <Route path="music" element={<MusicPage />} />
+                      <Route path="products" element={<ProtectedRoute allowedRoles={canViewProducts}><ProductsPage /></ProtectedRoute>} />
+                      <Route path="orders" element={<ProtectedRoute allowedRoles={canViewProducts}><OrdersPage /></ProtectedRoute>} />
+                      <Route path="music" element={<ProtectedRoute allowedRoles={canOperate}><MusicPage /></ProtectedRoute>} />
                     </Routes>
                   </Layout>
                 </ProtectedRoute>

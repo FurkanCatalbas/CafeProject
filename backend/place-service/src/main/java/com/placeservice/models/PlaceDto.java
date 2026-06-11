@@ -12,4 +12,5 @@ public class PlaceDto extends BaseDto implements Serializable {
     private String name;
     private Integer managerId;
     private String qrCode;
+    private String businessCode;
 }

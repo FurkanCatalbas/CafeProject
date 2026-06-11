@@ -8,6 +8,7 @@ export interface SpotifyAuthorizeResponse {
 
 export interface SpotifyConnectionStatusDto {
   connected: boolean;
+  displayName?: string;
   spotifyDisplayName?: string;
   spotifyProfileImage?: string;
 }
@@ -27,6 +28,7 @@ export interface MusicSessionDto {
   playlistName?: string;
   qrCode?: string;
   publicVotingUrl?: string;
+  qrImageUrl?: string;
   active: boolean;
 }
 
@@ -116,5 +118,12 @@ export const musicService = {
   getPublicSessionByPlaceId: async (placeId: number) => {
     const response = await api.get(`/music-service/api/music-votes/public/venue/${placeId}`);
     return unwrapApiData<any>(response.data);
+  },
+
+  downloadQrPng: async (qrCode: string) => {
+    const response = await api.get(`/music-service/api/music-votes/public/${qrCode}/qr.png`, {
+      responseType: 'blob',
+    });
+    return response.data as Blob;
   }
 };

@@ -15,6 +15,8 @@ const RegisterPage: React.FC = () => {
     lastName: '',
     emailAddress: '',
     roleName: 'CUSTOMER',
+    businessCode: '',
+    businessName: '',
     password: '',
     confirmPassword: '',
   });
@@ -170,6 +172,40 @@ const RegisterPage: React.FC = () => {
                   <option value="CASHIER">Kasiyer</option>
                 </select>
               </div>
+
+              {formData.roleName === 'MANAGER' && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    İşletme Adı
+                  </label>
+                  <input
+                    type="text"
+                    name="businessName"
+                    value={formData.businessName}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+                    placeholder="Kafenizin adı"
+                  />
+                  <p className="mt-1 text-xs text-gray-500">İşletme kodunuz kayıt sonrası otomatik oluşturulur.</p>
+                </div>
+              )}
+
+              {formData.roleName !== 'ADMIN' && formData.roleName !== 'MANAGER' && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    İşletme Kodu
+                  </label>
+                  <input
+                    type="text"
+                    name="businessCode"
+                    value={formData.businessCode}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition uppercase"
+                    placeholder="Örn. BIZ-1234ABCD"
+                    required
+                  />
+                </div>
+              )}
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">

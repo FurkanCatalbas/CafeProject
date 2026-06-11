@@ -1,9 +1,11 @@
+# syntax=docker/dockerfile:1
+
 FROM maven:3.9-eclipse-temurin-21 AS build
 
 WORKDIR /workspace
 COPY backend ./backend
 
-RUN mvn -f backend/pom.xml -DskipTests package
+RUN --mount=type=cache,target=/root/.m2 mvn -f backend/pom.xml -DskipTests package
 
 ARG SERVICE
 RUN mkdir -p /app && cp backend/${SERVICE}/target/*.jar /app/app.jar

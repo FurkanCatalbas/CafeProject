@@ -34,8 +34,15 @@ public class OrderController {
     @PostMapping("")
     public ResponseEntity<QueryResponse<OrderDto>> create(
             @RequestBody OrderDto dto,
+<<<<<<< Updated upstream
             @RequestHeader(value = "X-User-Id", required = false) Integer userId) {
         OrderDto returnDto = orderService.create(dto, userId);
+=======
+            @RequestHeader("X-User-Id") Integer userId,
+            @RequestHeader(value = "X-User-Role", required = false) String userRole,
+            @RequestHeader(value = "X-Business-Code", required = false) String businessCode) {
+        OrderDto returnDto = orderService.create(dto, userId, userRole, businessCode);
+>>>>>>> Stashed changes
         return ResponseEntity.status(HttpStatus.CREATED).body(createOrderResponse(returnDto));
     }
 
@@ -64,8 +71,9 @@ public class OrderController {
             @PathVariable("id") Integer id,
             @PathVariable("paymentMethod") PaymentMethod paymentMethod,
             @RequestHeader(value = "X-User-Id", required = false) Integer userId,
-            @RequestHeader(value = "X-User-Role", required = false) String userRole) {
-        return ResponseEntity.ok(createOrderResponse(orderService.close(id, paymentMethod, userId, userRole)));
+            @RequestHeader(value = "X-User-Role", required = false) String userRole,
+            @RequestHeader(value = "X-Business-Code", required = false) String businessCode) {
+        return ResponseEntity.ok(createOrderResponse(orderService.close(id, paymentMethod, userId, userRole, businessCode)));
     }
 
     @GetMapping("/{id}")
@@ -75,8 +83,10 @@ public class OrderController {
     }
 
     @GetMapping("")
-    public ResponseEntity<QueryResponses<OrderDto>> getAll() {
-        List<OrderDto> dtos = orderService.getAll();
+    public ResponseEntity<QueryResponses<OrderDto>> getAll(
+            @RequestHeader(value = "X-User-Role", required = false) String requesterRole,
+            @RequestHeader(value = "X-Business-Code", required = false) String businessCode) {
+        List<OrderDto> dtos = orderService.getAll(requesterRole, businessCode);
         return ResponseEntity.ok(createOrdersResponse(dtos));
     }
 
@@ -87,25 +97,34 @@ public class OrderController {
     }
 
     @GetMapping("/active")
-    public ResponseEntity<QueryResponses<OrderDto>> getActive() {
-        return ResponseEntity.ok(createOrdersResponse(orderService.getActive()));
+    public ResponseEntity<QueryResponses<OrderDto>> getActive(
+            @RequestHeader(value = "X-User-Role", required = false) String requesterRole,
+            @RequestHeader(value = "X-Business-Code", required = false) String businessCode) {
+        return ResponseEntity.ok(createOrdersResponse(orderService.getActive(requesterRole, businessCode)));
     }
 
     @GetMapping("/recent")
-    public ResponseEntity<QueryResponses<OrderDto>> getRecent() {
-        return ResponseEntity.ok(createOrdersResponse(orderService.getRecent()));
+    public ResponseEntity<QueryResponses<OrderDto>> getRecent(
+            @RequestHeader(value = "X-User-Role", required = false) String requesterRole,
+            @RequestHeader(value = "X-Business-Code", required = false) String businessCode) {
+        return ResponseEntity.ok(createOrdersResponse(orderService.getRecent(requesterRole, businessCode)));
     }
 
     @GetMapping("/place/{placeId}/active")
-    public ResponseEntity<QueryResponses<OrderDto>> getActiveByPlaceId(@PathVariable("placeId") Integer placeId) {
-        List<OrderDto> dtos = orderService.getActiveByPlaceId(placeId);
+    public ResponseEntity<QueryResponses<OrderDto>> getActiveByPlaceId(
+            @PathVariable("placeId") Integer placeId,
+            @RequestHeader(value = "X-User-Role", required = false) String requesterRole,
+            @RequestHeader(value = "X-Business-Code", required = false) String businessCode) {
+        List<OrderDto> dtos = orderService.getActiveByPlaceId(placeId, requesterRole, businessCode);
         return ResponseEntity.ok(createOrdersResponse(dtos));
     }
 
     @GetMapping("/dashboard/summary")
-    public ResponseEntity<QueryResponse<DashboardSummaryDto>> getDashboardSummary() {
+    public ResponseEntity<QueryResponse<DashboardSummaryDto>> getDashboardSummary(
+            @RequestHeader(value = "X-User-Role", required = false) String requesterRole,
+            @RequestHeader(value = "X-Business-Code", required = false) String businessCode) {
         QueryResponse<DashboardSummaryDto> queryResponse = new QueryResponse<>();
-        queryResponse.setData(orderService.getDashboardSummary());
+        queryResponse.setData(orderService.getDashboardSummary(requesterRole, businessCode));
         return ResponseEntity.ok(queryResponse);
     }
 

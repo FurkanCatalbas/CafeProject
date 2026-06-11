@@ -3,6 +3,7 @@ import { Plus, Search, Edit, Trash2, Package } from 'lucide-react';
 import { productsService } from '../../services/productsService';
 import ModalOverlay from '../../components/common/ModalOverlay';
 import { formatTryCurrency } from '../../utils/formatTryCurrency';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface Product {
   id: number;
@@ -16,6 +17,9 @@ interface Product {
 }
 
 const ProductsPage: React.FC = () => {
+  const { user } = useAuth();
+  const role = user?.roleName || user?.role || 'CUSTOMER';
+  const canManageProducts = ['ADMIN', 'MANAGER', 'WAITER', 'CASHIER'].includes(role);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -202,13 +206,15 @@ const ProductsPage: React.FC = () => {
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Ürünler</h1>
           <p className="text-gray-600">Kafe menünüzü yönetin</p>
         </div>
-        <button
-          onClick={() => setShowCreateModal(true)}
-          className="btn-primary flex items-center gap-2"
-        >
-          <Plus className="w-5 h-5" />
-          Ürün Ekle
-        </button>
+        {canManageProducts && (
+          <button
+            onClick={() => setShowCreateModal(true)}
+            className="btn-primary flex items-center gap-2"
+          >
+            <Plus className="w-5 h-5" />
+            Ürün Ekle
+          </button>
+        )}
       </div>
 
       {error && (
@@ -249,24 +255,26 @@ const ProductsPage: React.FC = () => {
               </span>
             </div>
             <div className="flex items-center justify-between text-sm text-gray-400 mb-4">
-              <span className="text-gray-600">Stok: {product.stock}</span>
+              {canManageProducts && <span className="text-gray-600">Stok: {product.stock}</span>}
               <span className="text-gray-600">{product.category}</span>
             </div>
-            <div className="flex gap-2">
-              <button
-                onClick={() => handleOpenEditProduct(product)}
-                className="btn-secondary flex-1 text-sm flex items-center justify-center gap-1"
-              >
-                <Edit className="w-4 h-4" />
-                Düzenle
-              </button>
-              <button
-                onClick={() => handleDeleteProduct(product.id)}
-                className="p-2 text-gray-400 hover:text-red-400 hover:bg-red-900/20 rounded-lg"
-              >
-                <Trash2 className="w-4 h-4" />
-              </button>
-            </div>
+            {canManageProducts && (
+              <div className="flex gap-2">
+                <button
+                  onClick={() => handleOpenEditProduct(product)}
+                  className="btn-secondary flex-1 text-sm flex items-center justify-center gap-1"
+                >
+                  <Edit className="w-4 h-4" />
+                  Düzenle
+                </button>
+                <button
+                  onClick={() => handleDeleteProduct(product.id)}
+                  className="p-2 text-gray-400 hover:text-red-400 hover:bg-red-900/20 rounded-lg"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            )}
           </div>
         ))}
         {filteredProducts.length === 0 && (

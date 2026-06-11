@@ -32,7 +32,10 @@ yarn-error.log*
 # Environment files
 #.env
 #.env.*
+#*.env
+#*.env.*
 #!.env.example
+#!*.env.example
 
 # Local root assets/scripts not for git
 /1.jpeg

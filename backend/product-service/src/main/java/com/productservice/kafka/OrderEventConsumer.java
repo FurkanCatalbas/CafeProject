@@ -40,7 +40,7 @@ public class OrderEventConsumer {
                 if (product != null && product.getStock() != null) {
                     int newStock = Math.max(0, product.getStock() - quantity);
                     product.setStock(newStock);
-                    productsService.update(product);
+                    productsService.update(product, "ADMIN", product.getBusinessCode());
                     log.info("Stock updated for product {}: new stock = {}", productId, newStock);
                 }
             }

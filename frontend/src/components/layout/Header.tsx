@@ -37,6 +37,11 @@ const Header: React.FC<HeaderProps> = ({ onToggleSidebar }) => {
           <p className="text-xs text-gray-500">
             {getRoleLabelTr(user?.roleName)}
           </p>
+          {user?.businessCode && (
+            <p className="text-[11px] font-medium text-blue-600">
+              İşletme: {user.businessCode}
+            </p>
+          )}
         </div>
         
         <div className="relative group">

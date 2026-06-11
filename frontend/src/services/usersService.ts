@@ -11,7 +11,20 @@ export interface UserDto {
   status: 'ACTIVE' | 'INACTIVE' | 'SUSPENDED';
   type: number;
   password?: string;
+  businessCode?: string;
+  businessName?: string;
 }
+
+const getCurrentBusinessCode = () => {
+  const token = localStorage.getItem('token');
+  if (!token) return '';
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1] || ''));
+    return payload?.userObject?.businessCode || '';
+  } catch {
+    return '';
+  }
+};
 
 const resolvePersistedUser = async (payload: UserDto) => {
   if (payload?.id) {
@@ -34,7 +47,19 @@ export const usersService = {
   },
   
   create: async (userData: UserDto) => {
-    const response = await api.post('/user-service/api/users', userData);
+    const businessCode = userData.businessCode || getCurrentBusinessCode();
+    await api.post('/auth-service/api/auth/register', {
+      type: userData.type,
+      username: userData.username,
+      password: userData.password,
+      firstName: userData.firstName,
+      lastName: userData.lastName,
+      emailAddress: userData.emailAddress,
+      roleName: userData.roleName,
+      businessCode,
+    });
+
+    const response = await api.post('/user-service/api/users', { ...userData, businessCode });
     const payload = unwrapApiData<UserDto>(response.data);
     return resolvePersistedUser(payload);
   },

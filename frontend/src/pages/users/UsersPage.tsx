@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Plus, Search, Edit, Trash2, Users, Mail, Shield } from 'lucide-react';
 import { usersService } from '../../services/usersService';
 import ModalOverlay from '../../components/common/ModalOverlay';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface User {
   id: number;
@@ -16,6 +17,20 @@ interface User {
 }
 
 const UsersPage: React.FC = () => {
+  const { user: currentUser } = useAuth();
+  const currentRole = currentUser?.roleName || currentUser?.role || 'CUSTOMER';
+  const roleOptions = currentRole === 'MANAGER'
+    ? [
+        { value: 'WAITER' as User['roleName'], label: 'Garson' },
+        { value: 'CASHIER' as User['roleName'], label: 'Kasiyer' },
+      ]
+    : [
+        { value: 'ADMIN' as User['roleName'], label: 'Yönetici' },
+        { value: 'MANAGER' as User['roleName'], label: 'Müdür' },
+        { value: 'WAITER' as User['roleName'], label: 'Garson' },
+        { value: 'CASHIER' as User['roleName'], label: 'Kasiyer' },
+        { value: 'CUSTOMER' as User['roleName'], label: 'Müşteri' },
+      ];
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -31,7 +46,7 @@ const UsersPage: React.FC = () => {
     username: '',
     emailAddress: '',
     password: '',
-    roleName: 'CUSTOMER' as User['roleName'],
+    roleName: 'WAITER' as User['roleName'],
     status: 'ACTIVE' as User['status'],
     type: 1,
   });
@@ -40,7 +55,7 @@ const UsersPage: React.FC = () => {
     lastName: '',
     username: '',
     emailAddress: '',
-    roleName: 'CUSTOMER' as User['roleName'],
+    roleName: 'WAITER' as User['roleName'],
     status: 'ACTIVE' as User['status'],
     type: 1,
     password: '',
@@ -85,7 +100,7 @@ const UsersPage: React.FC = () => {
       username: '',
       emailAddress: '',
       password: '',
-      roleName: 'CUSTOMER',
+      roleName: roleOptions[0].value,
       status: 'ACTIVE',
       type: 1,
     });
@@ -438,11 +453,9 @@ const UsersPage: React.FC = () => {
                   value={newUser.roleName}
                   onChange={(e) => setNewUser((prev) => ({ ...prev, roleName: e.target.value as User['roleName'] }))}
                 >
-                  <option value="ADMIN">Yönetici</option>
-                  <option value="MANAGER">Müdür</option>
-                  <option value="WAITER">Garson</option>
-                  <option value="CASHIER">Kasiyer</option>
-                  <option value="CUSTOMER">Müşteri</option>
+                  {roleOptions.map((option) => (
+                    <option key={option.value} value={option.value}>{option.label}</option>
+                  ))}
                 </select>
                 <select
                   className="input-field"
@@ -518,11 +531,9 @@ const UsersPage: React.FC = () => {
                   value={editUser.roleName}
                   onChange={(e) => setEditUser((prev) => ({ ...prev, roleName: e.target.value as User['roleName'] }))}
                 >
-                  <option value="ADMIN">Yönetici</option>
-                  <option value="MANAGER">Müdür</option>
-                  <option value="WAITER">Garson</option>
-                  <option value="CASHIER">Kasiyer</option>
-                  <option value="CUSTOMER">Müşteri</option>
+                  {roleOptions.map((option) => (
+                    <option key={option.value} value={option.value}>{option.label}</option>
+                  ))}
                 </select>
                 <select
                   className="input-field"

@@ -58,6 +58,13 @@ public class JwtService {
     return userObject == null ? null : (String) userObject.get("role");
   }
 
+  public String extractBusinessCode(String token) {
+    Claims claims = extractAllClaims(token);
+    Map<String, Object> userObject = (Map<String, Object>) claims.get("userObject");
+    Object businessCode = userObject == null ? null : userObject.get("businessCode");
+    return businessCode == null ? "" : String.valueOf(businessCode);
+  }
+
   private Claims extractAllClaims(String token) {
     return Jwts
         .parserBuilder()

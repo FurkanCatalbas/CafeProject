@@ -23,16 +23,22 @@ public class PlaceController {
     private final PlacesService placesService;
 
     @PostMapping("")
-    public ResponseEntity<QueryResponse<PlaceDto>> create(@RequestBody PlaceDto dto) {
+    public ResponseEntity<QueryResponse<PlaceDto>> create(
+            @RequestBody PlaceDto dto,
+            @RequestHeader(value = "X-User-Role", required = false) String requesterRole,
+            @RequestHeader(value = "X-Business-Code", required = false) String businessCode) {
         PlaceDto returnDto = new PlaceDto();
-        returnDto.setId(placesService.create(dto).getId());
+        returnDto.setId(placesService.create(dto, requesterRole, businessCode).getId());
         return ResponseEntity.status(HttpStatus.CREATED).body(createQueryResponse(returnDto));
     }
 
     @PutMapping
-    public ResponseEntity<QueryResponse<PlaceDto>> update(@RequestBody PlaceDto dto) {
+    public ResponseEntity<QueryResponse<PlaceDto>> update(
+            @RequestBody PlaceDto dto,
+            @RequestHeader(value = "X-User-Role", required = false) String requesterRole,
+            @RequestHeader(value = "X-Business-Code", required = false) String businessCode) {
         PlaceDto returnDto = new PlaceDto();
-        returnDto.setId(placesService.update(dto).getId());
+        returnDto.setId(placesService.update(dto, requesterRole, businessCode).getId());
         return ResponseEntity.ok(createQueryResponse(returnDto));
     }
 
@@ -48,13 +54,18 @@ public class PlaceController {
     }
 
     @GetMapping("")
-    public ResponseEntity<QueryResponses<PlaceDto>> getAll() {
-        return ResponseEntity.ok(createQueryResponses(placesService.getAll()));
+    public ResponseEntity<QueryResponses<PlaceDto>> getAll(
+            @RequestHeader(value = "X-User-Role", required = false) String requesterRole,
+            @RequestHeader(value = "X-Business-Code", required = false) String businessCode) {
+        return ResponseEntity.ok(createQueryResponses(placesService.getAll(requesterRole, businessCode)));
     }
 
     @GetMapping("/status/{status}")
-    public ResponseEntity<QueryResponses<PlaceDto>> getByStatus(@PathVariable("status") PlaceStatus status) {
-        return ResponseEntity.ok(createQueryResponses(placesService.getByStatus(status)));
+    public ResponseEntity<QueryResponses<PlaceDto>> getByStatus(
+            @PathVariable("status") PlaceStatus status,
+            @RequestHeader(value = "X-User-Role", required = false) String requesterRole,
+            @RequestHeader(value = "X-Business-Code", required = false) String businessCode) {
+        return ResponseEntity.ok(createQueryResponses(placesService.getByStatus(status, requesterRole, businessCode)));
     }
 
     @PatchMapping("/{id}/status/{status}")

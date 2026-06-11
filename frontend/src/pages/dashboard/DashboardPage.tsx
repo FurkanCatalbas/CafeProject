@@ -5,7 +5,12 @@ import {
   Users, 
   MapPin, 
   Package, 
-  ShoppingCart
+  ShoppingCart,
+  Building2,
+  Edit,
+  Trash2,
+  Save,
+  X
 } from 'lucide-react';
 import { usersService } from '../../services/usersService';
 import type { UserDto } from '../../services/usersService';
@@ -30,6 +35,13 @@ interface DashboardStats {
 
 interface JwtClaims {
   sub?: string;
+}
+
+interface BusinessSummary {
+  businessCode: string;
+  businessName: string;
+  managerName: string;
+  employeeCount: number;
 }
 
 const getOrderStatusLabel = (status?: string) => {
@@ -64,6 +76,15 @@ const DashboardPage: React.FC = () => {
   const [recentOrders, setRecentOrders] = useState<OrderDto[]>([]);
   const [topProducts, setTopProducts] = useState<TopProduct[]>([]);
   const [welcomeName, setWelcomeName] = useState('Kullanıcı');
+  const [allUsers, setAllUsers] = useState<UserDto[]>([]);
+  const [businesses, setBusinesses] = useState<BusinessSummary[]>([]);
+  const [selectedBusinessCode, setSelectedBusinessCode] = useState('');
+  const [editingEmployeeId, setEditingEmployeeId] = useState<number | null>(null);
+  const [editingEmployee, setEditingEmployee] = useState<{ roleName: UserDto['roleName']; status: UserDto['status'] }>({
+    roleName: 'WAITER',
+    status: 'ACTIVE',
+  });
+  const isAdmin = (user?.roleName || user?.role) === 'ADMIN';
 
   const getTokenClaims = (): JwtClaims => {
     const token = localStorage.getItem('token');
@@ -88,6 +109,40 @@ const DashboardPage: React.FC = () => {
     const loadDashboard = async () => {
       setLoading(true);
       setError(null);
+
+      if (isAdmin) {
+        try {
+          const users = await usersService.getAll();
+          const safeUsers = users || [];
+          const businessMap = new Map<string, BusinessSummary>();
+
+          safeUsers
+            .filter((item) => item.businessCode)
+            .forEach((item) => {
+              const code = item.businessCode!;
+              const existing = businessMap.get(code);
+              const isManager = item.roleName === 'MANAGER';
+              const displayName = [item.firstName, item.lastName].filter(Boolean).join(' ').trim() || item.username;
+              businessMap.set(code, {
+                businessCode: code,
+                businessName: existing?.businessName || item.businessName || code,
+                managerName: isManager ? displayName : existing?.managerName || '-',
+                employeeCount: safeUsers.filter((u) => u.businessCode === code && ['MANAGER', 'WAITER', 'CASHIER'].includes(u.roleName)).length,
+              });
+            });
+
+          const businessList = Array.from(businessMap.values()).sort((a, b) => a.businessName.localeCompare(b.businessName));
+          setAllUsers(safeUsers);
+          setBusinesses(businessList);
+          setSelectedBusinessCode((current) => current || businessList[0]?.businessCode || '');
+          setWelcomeName('Admin');
+        } catch {
+          setError('Kayıtlı işletme bilgileri alınamadı.');
+        } finally {
+          setLoading(false);
+        }
+        return;
+      }
 
       const [
         usersResult,
@@ -173,7 +228,61 @@ const DashboardPage: React.FC = () => {
     };
 
     loadDashboard();
-  }, [user?.firstName, user?.lastName]);
+  }, [isAdmin, user?.firstName, user?.lastName]);
+
+  const selectedBusiness = businesses.find((business) => business.businessCode === selectedBusinessCode);
+  const selectedEmployees = allUsers.filter(
+    (item) => item.businessCode === selectedBusinessCode && ['MANAGER', 'WAITER', 'CASHIER'].includes(item.roleName)
+  );
+
+  const getUserDisplayName = (item: UserDto) => [item.firstName, item.lastName].filter(Boolean).join(' ').trim() || item.username;
+
+  const roleLabel = (role: string) => {
+    switch (role) {
+      case 'MANAGER': return 'Müdür';
+      case 'WAITER': return 'Garson';
+      case 'CASHIER': return 'Kasiyer';
+      default: return role;
+    }
+  };
+
+  const statusLabel = (status: string) => {
+    switch (status) {
+      case 'ACTIVE': return 'Aktif';
+      case 'INACTIVE': return 'Pasif';
+      case 'SUSPENDED': return 'Askıda';
+      default: return status;
+    }
+  };
+
+  const refreshAdminUsers = async () => {
+    const users = await usersService.getAll();
+    setAllUsers(users || []);
+  };
+
+  const startEditEmployee = (employee: UserDto) => {
+    setEditingEmployeeId(employee.id ?? null);
+    setEditingEmployee({ roleName: employee.roleName, status: employee.status });
+  };
+
+  const saveEmployee = async (employee: UserDto) => {
+    if (!employee.id) return;
+    await usersService.update({
+      ...employee,
+      roleName: editingEmployee.roleName,
+      status: editingEmployee.status,
+    });
+    setEditingEmployeeId(null);
+    await refreshAdminUsers();
+  };
+
+  const deleteEmployee = async (employee: UserDto) => {
+    if (!employee.id || !window.confirm(`${getUserDisplayName(employee)} kullanıcısını silmek istiyor musunuz?`)) {
+      return;
+    }
+    await usersService.delete(employee.id);
+    await refreshAdminUsers();
+  };
 
   const statCards = [
     {
@@ -213,6 +322,152 @@ const DashboardPage: React.FC = () => {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+      </div>
+    );
+  }
+
+  if (isAdmin) {
+    return (
+      <div className="min-h-screen p-6 space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
+          <p className="mt-1 text-sm text-gray-600">Kayıtlı işletmeleri görüntüleyin ve işletme çalışanlarını yönetin.</p>
+        </div>
+
+        {error && (
+          <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-red-700">
+            {error}
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+            <div className="flex items-center justify-between mb-4">
+              <Building2 className="w-10 h-10 text-blue-600" />
+              <span className="text-xs font-medium text-gray-500">Toplam</span>
+            </div>
+            <p className="text-3xl font-bold text-gray-900">{businesses.length}</p>
+            <p className="text-sm text-gray-600 mt-1">Kayıtlı işletme</p>
+          </div>
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+            <div className="flex items-center justify-between mb-4">
+              <Users className="w-10 h-10 text-green-600" />
+              <span className="text-xs font-medium text-gray-500">Seçili işletme</span>
+            </div>
+            <p className="text-3xl font-bold text-gray-900">{selectedEmployees.length}</p>
+            <p className="text-sm text-gray-600 mt-1">Çalışan</p>
+          </div>
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+            <p className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2">İşletme Seç</p>
+            <input
+              list="business-list"
+              value={selectedBusinessCode}
+              onChange={(event) => setSelectedBusinessCode(event.target.value)}
+              className="input-field w-full"
+              placeholder="İşletme kodu seçin"
+            />
+            <datalist id="business-list">
+              {businesses.map((business) => (
+                <option key={business.businessCode} value={business.businessCode}>{business.businessName}</option>
+              ))}
+            </datalist>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 className="text-xl font-bold text-gray-900">{selectedBusiness?.businessName || 'İşletme seçin'}</h2>
+              <p className="text-sm text-gray-600">Kod: {selectedBusiness?.businessCode || '-'} · Müdür: {selectedBusiness?.managerName || '-'}</p>
+            </div>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-gray-200">
+                  <th className="text-left py-3 px-3 text-sm font-medium text-gray-700">Çalışan</th>
+                  <th className="text-left py-3 px-3 text-sm font-medium text-gray-700">E-posta</th>
+                  <th className="text-left py-3 px-3 text-sm font-medium text-gray-700">Rol</th>
+                  <th className="text-left py-3 px-3 text-sm font-medium text-gray-700">Durum</th>
+                  <th className="text-left py-3 px-3 text-sm font-medium text-gray-700">İşlem</th>
+                </tr>
+              </thead>
+              <tbody>
+                {selectedEmployees.map((employee) => {
+                  const isEditing = editingEmployeeId === employee.id;
+                  return (
+                    <tr key={employee.id} className="border-b border-gray-100">
+                      <td className="py-3 px-3">
+                        <p className="font-medium text-gray-900">{getUserDisplayName(employee)}</p>
+                        <p className="text-xs text-gray-500">@{employee.username}</p>
+                      </td>
+                      <td className="py-3 px-3 text-sm text-gray-700">{employee.emailAddress}</td>
+                      <td className="py-3 px-3">
+                        {isEditing ? (
+                          <select
+                            value={editingEmployee.roleName}
+                            onChange={(event) => setEditingEmployee((prev) => ({ ...prev, roleName: event.target.value as UserDto['roleName'] }))}
+                            className="input-field min-w-32"
+                          >
+                            <option value="MANAGER">Müdür</option>
+                            <option value="WAITER">Garson</option>
+                            <option value="CASHIER">Kasiyer</option>
+                          </select>
+                        ) : (
+                          <span className="text-sm text-gray-800">{roleLabel(employee.roleName)}</span>
+                        )}
+                      </td>
+                      <td className="py-3 px-3">
+                        {isEditing ? (
+                          <select
+                            value={editingEmployee.status}
+                            onChange={(event) => setEditingEmployee((prev) => ({ ...prev, status: event.target.value as UserDto['status'] }))}
+                            className="input-field min-w-32"
+                          >
+                            <option value="ACTIVE">Aktif</option>
+                            <option value="INACTIVE">Pasif</option>
+                            <option value="SUSPENDED">Askıda</option>
+                          </select>
+                        ) : (
+                          <span className="text-sm text-gray-800">{statusLabel(employee.status)}</span>
+                        )}
+                      </td>
+                      <td className="py-3 px-3">
+                        <div className="flex items-center gap-2">
+                          {isEditing ? (
+                            <>
+                              <button onClick={() => saveEmployee(employee)} className="p-2 text-green-600 hover:bg-green-50 rounded-lg" title="Kaydet">
+                                <Save className="w-4 h-4" />
+                              </button>
+                              <button onClick={() => setEditingEmployeeId(null)} className="p-2 text-gray-500 hover:bg-gray-50 rounded-lg" title="İptal">
+                                <X className="w-4 h-4" />
+                              </button>
+                            </>
+                          ) : (
+                            <>
+                              <button onClick={() => startEditEmployee(employee)} className="p-2 text-gray-500 hover:text-gray-800 hover:bg-gray-100 rounded-lg" title="Düzenle">
+                                <Edit className="w-4 h-4" />
+                              </button>
+                              <button onClick={() => deleteEmployee(employee)} className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg" title="Sil">
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+                {selectedEmployees.length === 0 && (
+                  <tr>
+                    <td colSpan={5} className="py-6 text-center text-sm text-gray-500">Bu işletme için çalışan bulunamadı.</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
     );
   }
@@ -266,8 +521,10 @@ const DashboardPage: React.FC = () => {
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-lg font-semibold text-gray-900">Ciro Özeti</h3>
             </div>
-            <div className="h-64 bg-gray-50 rounded-lg flex items-center justify-center">
-              <p className="text-gray-500">Ciro grafiği burada gösterilecek</p>
+            <div className="h-64 bg-gray-50 rounded-lg flex flex-col items-center justify-center gap-2">
+              <p className="text-sm font-medium text-gray-500">Bugünkü Ciro</p>
+              <p className="text-4xl font-bold text-gray-900">{formatTryCurrency(stats.todayRevenue)}</p>
+              <p className="text-xs text-gray-500">Sadece ödeme durumu ödendi olan bugünkü siparişler dahil edilir.</p>
             </div>
           </div>
 

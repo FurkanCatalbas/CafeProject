@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Collectors;
 
 @Service
@@ -20,14 +21,17 @@ public class ProductsServiceImpl implements ProductsService {
     private final ProductsRepository productsRepository;
 
     @Override
-    public ProductDto create(ProductDto dto) {
+    public ProductDto create(ProductDto dto, String requesterRole, String businessCode) {
         dto.setId(null);
+        applyRequesterBusiness(dto, requesterRole, businessCode);
         return saveOrUpdate(RecordStatusType.CREATE, dto);
     }
 
     @Override
-    public ProductDto update(ProductDto dto) {
-        getById(dto.getId());
+    public ProductDto update(ProductDto dto, String requesterRole, String businessCode) {
+        ProductDto existing = getById(dto.getId());
+        ensureSameBusiness(existing, requesterRole, businessCode);
+        applyRequesterBusiness(dto, requesterRole, businessCode);
         return saveOrUpdate(RecordStatusType.UPDATE, dto);
     }
 
@@ -52,16 +56,18 @@ public class ProductsServiceImpl implements ProductsService {
     }
 
     @Override
-    public List<ProductDto> getAll() {
+    public List<ProductDto> getAll(String requesterRole, String businessCode) {
         return productsRepository.findAll().stream()
                 .map(this::toDto)
+                .filter(dto -> canAccess(dto, requesterRole, businessCode))
                 .collect(Collectors.toList());
     }
 
     @Override
-    public List<ProductDto> getByCategory(String category) {
+    public List<ProductDto> getByCategory(String category, String requesterRole, String businessCode) {
         return productsRepository.findByCategory(category).stream()
                 .map(this::toDto)
+                .filter(dto -> canAccess(dto, requesterRole, businessCode))
                 .collect(Collectors.toList());
     }
 
@@ -77,5 +83,39 @@ public class ProductsServiceImpl implements ProductsService {
 
     private ProductEntity toEntity(ProductDto dto) {
         return ProductMapper.INSTANCE.toEntity(dto);
+    }
+
+    private void applyRequesterBusiness(ProductDto dto, String requesterRole, String businessCode) {
+        if (!isAdmin(requesterRole)) {
+            String normalizedBusinessCode = normalizeBusinessCode(businessCode);
+            if (normalizedBusinessCode == null) {
+                throw new com.wise.core.exceptions.BadRequestException("Isletme kodu bulunamadi.");
+            }
+            dto.setBusinessCode(normalizedBusinessCode);
+            return;
+        }
+        dto.setBusinessCode(normalizeBusinessCode(dto.getBusinessCode()));
+    }
+
+    private void ensureSameBusiness(ProductDto dto, String requesterRole, String businessCode) {
+        if (!canAccess(dto, requesterRole, businessCode)) {
+            throw new com.wise.core.exceptions.BadRequestException("Bu isletmedeki urune erisim yetkiniz yok.");
+        }
+    }
+
+    private boolean canAccess(ProductDto dto, String requesterRole, String businessCode) {
+        if (isAdmin(requesterRole)) {
+            return true;
+        }
+        String normalizedBusinessCode = normalizeBusinessCode(businessCode);
+        return normalizedBusinessCode != null && normalizedBusinessCode.equalsIgnoreCase(dto.getBusinessCode());
+    }
+
+    private boolean isAdmin(String requesterRole) {
+        return requesterRole != null && com.wise.core.enums.UserRole.ADMIN.getValue().equalsIgnoreCase(requesterRole.trim());
+    }
+
+    private String normalizeBusinessCode(String businessCode) {
+        return businessCode == null || businessCode.isBlank() ? null : businessCode.trim().toUpperCase(Locale.ROOT);
     }
 }

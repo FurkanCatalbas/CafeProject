@@ -45,12 +45,14 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
             
             String userId = "0";
             String role = UserRole.CUSTOMER.getValue();
+            String businessCode = "";
 
             // 2. Token varsa bilgileri her durumda çıkar
             if (token != null) {
                 try {
                     userId = jwtService.extractUserId(token);
                     role = normalizeRole(jwtService.extractRole(token));
+                    businessCode = jwtService.extractBusinessCode(token);
                     
                     // Sadece korumalı rotalarda token validasyonu yap
                     if (validator.isSecured.test(request)) {
@@ -73,6 +75,7 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
             ServerHttpRequest mutatedRequest = request.mutate()
                     .header("X-User-Id", userId)
                     .header("X-User-Role", role)
+                    .header("X-Business-Code", businessCode == null ? "" : businessCode)
                     .build();
 
             return chain.filter(exchange.mutate().request(mutatedRequest).build());

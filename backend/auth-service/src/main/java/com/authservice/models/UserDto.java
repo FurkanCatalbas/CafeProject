@@ -1,6 +1,7 @@
 package com.authservice.models;
 
 import com.wise.core.enums.UserRole;
+import com.wise.core.enums.UserStatus;
 import lombok.Data;
 
 @Data
@@ -20,6 +21,12 @@ public class UserDto {
     private String emailAddress;
 
     private UserRole roleName;
+
+    private UserStatus status;
+
+    private String businessCode;
+
+    private String businessName;
 
 
 }

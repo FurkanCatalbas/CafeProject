@@ -25,4 +25,8 @@ public class UserDto extends BaseDto{
 
     private UserRole roleName;
 
+    private String businessCode;
+
+    private String businessName;
+
 }

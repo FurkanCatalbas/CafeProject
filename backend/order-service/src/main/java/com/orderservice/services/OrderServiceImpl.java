@@ -1,12 +1,16 @@
 package com.orderservice.services;
 
 import com.orderservice.clients.PlaceServiceClient;
+<<<<<<< Updated upstream
 import com.orderservice.clients.ProductServiceClient;
 import com.orderservice.kafka.OrderEventProducer;
+=======
+import com.orderservice.clients.ProductClientDto;
+import com.orderservice.clients.ProductServiceClient;
+>>>>>>> Stashed changes
 import com.orderservice.mappers.OrderItemMapper;
 import com.orderservice.mappers.OrderMapper;
 import com.orderservice.models.DashboardSummaryDto;
-import com.orderservice.models.OrderCreatedEvent;
 import com.orderservice.models.OrderDto;
 import com.orderservice.models.OrderEntity;
 import com.orderservice.models.OrderItemDto;
@@ -23,9 +27,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Collectors;
 
 @Service
@@ -33,17 +39,23 @@ import java.util.stream.Collectors;
 public class OrderServiceImpl implements OrderService {
 
     private final OrderRepository orderRepository;
-    private final OrderEventProducer orderEventProducer;
     private final PlaceServiceClient placeServiceClient;
     private final ProductServiceClient productServiceClient;
 
     @Override
     @Transactional
+<<<<<<< Updated upstream
     public OrderDto create(OrderDto dto, Integer userId) {
         Integer resolvedUserId = userId == null ? 0 : userId;
         placeServiceClient.validatePlaceForOrder(dto.getPlaceId(), resolvedUserId, null);
         dto.setId(null);
         dto.setUserId(resolvedUserId);
+=======
+    public OrderDto create(OrderDto dto, Integer userId, String userRole, String businessCode) {
+        dto.setId(null);
+        dto.setUserId(userId);
+        dto.setBusinessCode(normalizeBusinessCode(businessCode));
+>>>>>>> Stashed changes
         dto.setOrderDate(LocalDateTime.now());
         dto.setStatus(OrderStatus.ORDER_RECEIVED);
         dto.setPaymentStatus(PaymentStatus.UNPAID);
@@ -54,6 +66,9 @@ public class OrderServiceImpl implements OrderService {
         if (dto.getOrderItems() != null && !dto.getOrderItems().isEmpty()) {
             BigDecimal totalAmount = BigDecimal.ZERO;
             for (OrderItemDto item : dto.getOrderItems()) {
+                ProductClientDto product = reserveProductStock(item, userId, userRole, dto.getBusinessCode());
+                item.setProductName(product.getName());
+                item.setUnitPrice(product.getPrice());
                 BigDecimal itemTotal = item.getUnitPrice().multiply(BigDecimal.valueOf(item.getQuantity()));
                 item.setTotalPrice(itemTotal);
                 totalAmount = totalAmount.add(itemTotal);
@@ -77,6 +92,7 @@ public class OrderServiceImpl implements OrderService {
         entity = orderRepository.save(entity);
         dto.setId(entity.getId());
 
+<<<<<<< Updated upstream
         OrderCreatedEvent event = new OrderCreatedEvent();
         event.setOrderId(entity.getId());
         event.setUserId(resolvedUserId);
@@ -84,6 +100,8 @@ public class OrderServiceImpl implements OrderService {
         event.setItems(dto.getOrderItems());
         orderEventProducer.sendOrderCreatedEvent(event);
 
+=======
+>>>>>>> Stashed changes
         return toDto(entity);
     }
 
@@ -124,7 +142,10 @@ public class OrderServiceImpl implements OrderService {
                 .orElseThrow(() -> new ResourceNotFoundException("Siparis bulunamadi: " + id));
 
         entity.setStatus(status);
-        if (status == OrderStatus.PAID || status == OrderStatus.CANCELLED || status == OrderStatus.DELIVERED) {
+        if (status == OrderStatus.PAID) {
+            entity.setPaymentStatus(PaymentStatus.PAID);
+            entity.setCompletedDate(LocalDateTime.now());
+        } else if (status == OrderStatus.CANCELLED || status == OrderStatus.DELIVERED) {
             entity.setCompletedDate(LocalDateTime.now());
         }
         entity.setModifiedDate(LocalDateTime.now());
@@ -151,9 +172,10 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
-    public OrderDto close(Integer id, PaymentMethod paymentMethod, Integer userId, String userRole) {
+    public OrderDto close(Integer id, PaymentMethod paymentMethod, Integer userId, String userRole, String businessCode) {
         OrderEntity entity = orderRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Siparis bulunamadi: " + id));
+        ensureSameBusiness(toDto(entity), userRole, businessCode);
 
         entity.setPaymentMethod(paymentMethod);
         entity.setPaymentStatus(PaymentStatus.PAID);
@@ -163,7 +185,7 @@ public class OrderServiceImpl implements OrderService {
         entity.setUpdateseq(entity.getUpdateseq() == null ? 1 : entity.getUpdateseq() + 1);
 
         OrderEntity savedEntity = orderRepository.save(entity);
-        placeServiceClient.closePlace(savedEntity.getPlaceId(), userId, userRole);
+        placeServiceClient.closePlace(savedEntity.getPlaceId(), userId, userRole, entity.getBusinessCode());
         return toDto(savedEntity);
     }
 
@@ -182,37 +204,43 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public List<OrderDto> getActiveByPlaceId(Integer placeId) {
+    public List<OrderDto> getActiveByPlaceId(Integer placeId, String requesterRole, String businessCode) {
         List<OrderStatus> activeStatuses = getActiveStatuses();
         return orderRepository.findByPlaceIdAndStatusIn(placeId, activeStatuses).stream()
                 .map(this::toDto)
+                .filter(dto -> canAccess(dto, requesterRole, businessCode))
                 .collect(Collectors.toList());
     }
 
     @Override
-    public List<OrderDto> getActive() {
+    public List<OrderDto> getActive(String requesterRole, String businessCode) {
         return orderRepository.findByStatusIn(getActiveStatuses()).stream()
                 .map(this::toDto)
+                .filter(dto -> canAccess(dto, requesterRole, businessCode))
                 .collect(Collectors.toList());
     }
 
     @Override
-    public List<OrderDto> getRecent() {
+    public List<OrderDto> getRecent(String requesterRole, String businessCode) {
         return orderRepository.findTop10ByOrderByOrderDateDesc().stream()
                 .map(this::toDto)
+                .filter(dto -> canAccess(dto, requesterRole, businessCode))
                 .collect(Collectors.toList());
     }
 
     @Override
-    public List<OrderDto> getAll() {
+    public List<OrderDto> getAll(String requesterRole, String businessCode) {
         return orderRepository.findAll().stream()
                 .map(this::toDto)
+                .filter(dto -> canAccess(dto, requesterRole, businessCode))
                 .collect(Collectors.toList());
     }
 
     @Override
-    public DashboardSummaryDto getDashboardSummary() {
-        List<OrderEntity> orders = orderRepository.findAll();
+    public DashboardSummaryDto getDashboardSummary(String requesterRole, String businessCode) {
+        List<OrderEntity> orders = orderRepository.findAll().stream()
+                .filter(order -> canAccess(toDto(order), requesterRole, businessCode))
+                .toList();
         List<OrderStatus> activeStatuses = getActiveStatuses();
 
         long activeOrderCount = orders.stream()
@@ -224,8 +252,10 @@ public class OrderServiceImpl implements OrderService {
         long completedOrderCount = orders.stream()
                 .filter(order -> order.getStatus() == OrderStatus.PAID)
                 .count();
+        LocalDate today = LocalDate.now();
         BigDecimal totalRevenue = orders.stream()
                 .filter(order -> order.getPaymentStatus() == PaymentStatus.PAID)
+                .filter(order -> order.getCompletedDate() != null && order.getCompletedDate().toLocalDate().isEqual(today))
                 .map(OrderEntity::getTotalAmount)
                 .filter(java.util.Objects::nonNull)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -235,7 +265,7 @@ public class OrderServiceImpl implements OrderService {
         summary.setWaitingPaymentCount(waitingPaymentCount);
         summary.setCompletedOrderCount(completedOrderCount);
         summary.setTotalRevenue(totalRevenue);
-        summary.setRecentOrders(getRecent());
+        summary.setRecentOrders(getRecent(requesterRole, businessCode));
         return summary;
     }
 
@@ -251,6 +281,61 @@ public class OrderServiceImpl implements OrderService {
 
     private OrderEntity toEntity(OrderDto dto) {
         return OrderMapper.INSTANCE.toEntity(dto);
+    }
+
+    private ProductClientDto reserveProductStock(OrderItemDto item, Integer userId, String userRole, String businessCode) {
+        if (item.getProductId() == null || item.getQuantity() == null || item.getQuantity() <= 0) {
+            throw new com.wise.core.exceptions.BadRequestException("Gecerli urun ve adet bilgisi zorunludur.");
+        }
+
+        ProductClientDto product = productServiceClient.getById(item.getProductId());
+        if (!canAccessProduct(product, userRole, businessCode)) {
+            throw new com.wise.core.exceptions.BadRequestException("Bu isletmedeki urune erisim yetkiniz yok.");
+        }
+        if (Boolean.FALSE.equals(product.getIsActive())) {
+            throw new com.wise.core.exceptions.BadRequestException("Urun aktif degil: " + item.getProductId());
+        }
+        if (product.getPrice() == null) {
+            throw new com.wise.core.exceptions.BadRequestException("Urun fiyati bulunamadi: " + item.getProductId());
+        }
+        int stock = product.getStock() == null ? 0 : product.getStock();
+        if (stock < item.getQuantity()) {
+            throw new com.wise.core.exceptions.BadRequestException("Yetersiz stok: " + product.getName());
+        }
+
+        product.setStock(stock - item.getQuantity());
+        productServiceClient.updateStock(product, userId, userRole, businessCode);
+        return product;
+    }
+
+    private void ensureSameBusiness(OrderDto dto, String requesterRole, String businessCode) {
+        if (!canAccess(dto, requesterRole, businessCode)) {
+            throw new com.wise.core.exceptions.BadRequestException("Bu isletmedeki siparise erisim yetkiniz yok.");
+        }
+    }
+
+    private boolean canAccess(OrderDto dto, String requesterRole, String businessCode) {
+        if (isAdmin(requesterRole)) {
+            return true;
+        }
+        String normalizedBusinessCode = normalizeBusinessCode(businessCode);
+        return normalizedBusinessCode != null && normalizedBusinessCode.equalsIgnoreCase(dto.getBusinessCode());
+    }
+
+    private boolean canAccessProduct(ProductClientDto dto, String requesterRole, String businessCode) {
+        if (isAdmin(requesterRole)) {
+            return true;
+        }
+        String normalizedBusinessCode = normalizeBusinessCode(businessCode);
+        return normalizedBusinessCode != null && normalizedBusinessCode.equalsIgnoreCase(dto.getBusinessCode());
+    }
+
+    private boolean isAdmin(String requesterRole) {
+        return requesterRole != null && com.wise.core.enums.UserRole.ADMIN.getValue().equalsIgnoreCase(requesterRole.trim());
+    }
+
+    private String normalizeBusinessCode(String businessCode) {
+        return businessCode == null || businessCode.isBlank() ? null : businessCode.trim().toUpperCase(Locale.ROOT);
     }
 
     private List<OrderStatus> getActiveStatuses() {

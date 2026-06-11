@@ -49,6 +49,12 @@ public class UserEntity extends BaseEntity implements UserDetails {
     @Column(name = "ROLE_NAME", length = 50 ,nullable = false)
     private UserRole roleName;
 
+    @Column(name = "BUSINESS_CODE", length = 50)
+    private String businessCode;
+
+    @Column(name = "BUSINESS_NAME", length = 100)
+    private String businessName;
+
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

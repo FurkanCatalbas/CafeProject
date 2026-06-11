@@ -22,6 +22,7 @@ public class PlaceServiceClient {
 
     private final RestTemplate restTemplate;
 
+<<<<<<< Updated upstream
     public void validatePlaceForOrder(Integer placeId, Integer userId, String userRole) {
         if (placeId == null || placeId <= 0) {
             throw new BadRequestException("Gecerli bir masa secilmelidir.");
@@ -57,11 +58,25 @@ public class PlaceServiceClient {
     }
 
     public void closePlace(Integer placeId, Integer userId, String userRole) {
+=======
+    public void closePlace(Integer placeId, Integer userId, String userRole, String businessCode) {
+>>>>>>> Stashed changes
         if (placeId == null) {
             return;
         }
 
+<<<<<<< Updated upstream
         HttpHeaders headers = buildHeaders(userId, userRole);
+=======
+        HttpHeaders headers = new HttpHeaders();
+        if (userId != null) {
+            headers.set("X-User-Id", userId.toString());
+        }
+        if (userRole != null && !userRole.isBlank()) {
+            headers.set("X-User-Role", userRole);
+        }
+        headers.set("X-Business-Code", businessCode == null ? "" : businessCode);
+>>>>>>> Stashed changes
 
         try {
             restTemplate.exchange(

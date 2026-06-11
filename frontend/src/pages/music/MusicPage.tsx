@@ -15,16 +15,33 @@ import {
   ListMusic, 
   PlayCircle,
   QrCode,
-  Trophy,
   RefreshCw,
   Plus,
   Users,
   Settings,
-  XCircle
+  XCircle,
+  Download
 } from 'lucide-react';
 
+const spotifyStatusCacheKey = (placeId: number) => `music.spotifyStatus.${placeId}`;
+
+const readCachedSpotifyStatus = (placeId: number): SpotifyConnectionStatusDto | null => {
+  try {
+    const cached = sessionStorage.getItem(spotifyStatusCacheKey(placeId));
+    return cached ? JSON.parse(cached) : null;
+  } catch {
+    return null;
+  }
+};
+
+const writeCachedSpotifyStatus = (placeId: number, status: SpotifyConnectionStatusDto) => {
+  if (!status.connected) return;
+  sessionStorage.setItem(spotifyStatusCacheKey(placeId), JSON.stringify(status));
+};
+
 const MusicPage: React.FC = () => {
-  const [spotifyStatus, setSpotifyStatus] = useState<SpotifyConnectionStatusDto | null>(null);
+  const placeId = 1; // Sabit mekan id
+  const [spotifyStatus, setSpotifyStatus] = useState<SpotifyConnectionStatusDto | null>(() => readCachedSpotifyStatus(placeId));
   const [session, setSession] = useState<MusicSessionDto | null>(null);
   const [playlists, setPlaylists] = useState<SpotifyPlaylistDto[]>([]);
   const [tracks, setTracks] = useState<TrackDto[]>([]);
@@ -34,14 +51,13 @@ const MusicPage: React.FC = () => {
   const [actionLoading, setActionLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const placeId = 1; // Sabit mekan id
-
   const loadInitialData = useCallback(async (silent = false) => {
     if (!silent) setLoading(true);
     setError(null);
     try {
       const status = await musicService.getSpotifyStatus(placeId);
       setSpotifyStatus(status);
+      writeCachedSpotifyStatus(placeId, status);
 
       const sessionData = await musicService.getOrCreateSession(placeId);
       setSession(sessionData);
@@ -63,6 +79,10 @@ const MusicPage: React.FC = () => {
       }
     } catch (err: any) {
       console.error('Veri yükleme hatası:', err);
+      const cachedStatus = readCachedSpotifyStatus(placeId);
+      if (cachedStatus) {
+        setSpotifyStatus(cachedStatus);
+      }
       setError('Sistem verileri yüklenemedi. Servislerin açık olduğundan emin olun.');
     } finally {
       if (!silent) setLoading(false);
@@ -104,6 +124,19 @@ const MusicPage: React.FC = () => {
     } catch (err) {
       alert('Spotify bağlantısı başlatılamadı.');
     }
+  };
+
+  const handleDownloadQr = async () => {
+    if (!session?.qrCode) return;
+    const blob = await musicService.downloadQrPng(session.qrCode);
+    const objectUrl = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = objectUrl;
+    link.download = `music-vote-${session.qrCode}.png`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(objectUrl);
   };
 
   const handleSelectPlaylist = async (playlistId: string) => {
@@ -181,9 +214,23 @@ const MusicPage: React.FC = () => {
             <RefreshCw className={`h-5 w-5 ${actionLoading ? 'animate-spin' : ''}`} />
           </button>
           {session?.publicVotingUrl && (
-            <div className="flex items-center gap-3 bg-blue-600 text-white px-5 py-2.5 rounded-xl shadow-lg shadow-blue-200">
-              <QrCode className="h-5 w-5" />
-              <span className="text-sm font-bold tracking-widest uppercase">{session.qrCode}</span>
+            <div className="flex flex-wrap items-center gap-2">
+              <a
+                href={session.publicVotingUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center gap-3 bg-blue-600 text-white px-5 py-2.5 rounded-xl shadow-lg shadow-blue-200"
+              >
+                <QrCode className="h-5 w-5" />
+                <span className="text-sm font-bold tracking-widest uppercase">{session.qrCode}</span>
+              </a>
+              <button
+                type="button"
+                onClick={handleDownloadQr}
+                className="flex items-center gap-2 bg-white border border-slate-200 text-slate-700 px-4 py-2.5 rounded-xl hover:bg-slate-50 transition-colors shadow-sm text-sm font-bold"
+              >
+                <Download className="h-4 w-4" /> PNG İndir
+              </button>
             </div>
           )}
         </div>
@@ -219,10 +266,10 @@ const MusicPage: React.FC = () => {
               {spotifyStatus?.connected ? (
                 <div className="space-y-4">
                   <div className="w-16 h-16 bg-blue-50 rounded-full mx-auto flex items-center justify-center text-blue-600 border-4 border-white shadow-md">
-                    <span className="text-2xl font-black">{spotifyStatus.spotifyDisplayName?.charAt(0)}</span>
+                    <span className="text-2xl font-black">{(spotifyStatus.displayName || spotifyStatus.spotifyDisplayName)?.charAt(0)}</span>
                   </div>
                   <div>
-                    <p className="font-bold text-slate-900">{spotifyStatus.spotifyDisplayName}</p>
+                    <p className="font-bold text-slate-900">{spotifyStatus.displayName || spotifyStatus.spotifyDisplayName}</p>
                     <p className="text-[10px] text-slate-400 uppercase font-bold tracking-tighter">Bağlı Hesap</p>
                   </div>
                 </div>

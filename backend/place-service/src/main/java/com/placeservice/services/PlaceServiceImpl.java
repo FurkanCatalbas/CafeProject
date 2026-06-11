@@ -10,6 +10,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -20,8 +21,9 @@ public class PlaceServiceImpl implements PlacesService {
     private final PlacesRespository placesRepository;
 
     @Override
-    public PlaceDto create(PlaceDto placeDto) {
+    public PlaceDto create(PlaceDto placeDto, String requesterRole, String businessCode) {
         placeDto.setId(null);
+        applyRequesterBusiness(placeDto, requesterRole, businessCode);
         if (placeDto.getStatus() == null) {
             placeDto.setStatus(PlaceStatus.AVAILABLE);
         }
@@ -36,8 +38,10 @@ public class PlaceServiceImpl implements PlacesService {
     }
 
     @Override
-    public PlaceDto update(PlaceDto placeDto) {
-        getById(placeDto.getId());
+    public PlaceDto update(PlaceDto placeDto, String requesterRole, String businessCode) {
+        PlaceDto existing = getById(placeDto.getId());
+        ensureSameBusiness(existing, requesterRole, businessCode);
+        applyRequesterBusiness(placeDto, requesterRole, businessCode);
         PlaceEntity entity = placesRepository.save(toEntity(placeDto));
         return toDto(entity);
     }
@@ -50,16 +54,18 @@ public class PlaceServiceImpl implements PlacesService {
     }
 
     @Override
-    public List<PlaceDto> getAll() {
+    public List<PlaceDto> getAll(String requesterRole, String businessCode) {
         return placesRepository.findAll().stream()
                 .map(this::toDto)
+                .filter(dto -> canAccess(dto, requesterRole, businessCode))
                 .collect(Collectors.toList());
     }
 
     @Override
-    public List<PlaceDto> getByStatus(PlaceStatus status) {
+    public List<PlaceDto> getByStatus(PlaceStatus status, String requesterRole, String businessCode) {
         return placesRepository.findByStatus(status).stream()
                 .map(this::toDto)
+                .filter(dto -> canAccess(dto, requesterRole, businessCode))
                 .collect(Collectors.toList());
     }
 
@@ -105,5 +111,39 @@ public class PlaceServiceImpl implements PlacesService {
         PlaceEntity entity = new PlaceEntity();
         BeanUtils.copyProperties(dto, entity);
         return entity;
+    }
+
+    private void applyRequesterBusiness(PlaceDto dto, String requesterRole, String businessCode) {
+        if (!isAdmin(requesterRole)) {
+            String normalizedBusinessCode = normalizeBusinessCode(businessCode);
+            if (normalizedBusinessCode == null) {
+                throw new com.wise.core.exceptions.BadRequestException("Isletme kodu bulunamadi.");
+            }
+            dto.setBusinessCode(normalizedBusinessCode);
+            return;
+        }
+        dto.setBusinessCode(normalizeBusinessCode(dto.getBusinessCode()));
+    }
+
+    private void ensureSameBusiness(PlaceDto dto, String requesterRole, String businessCode) {
+        if (!canAccess(dto, requesterRole, businessCode)) {
+            throw new com.wise.core.exceptions.BadRequestException("Bu isletmedeki masaya erisim yetkiniz yok.");
+        }
+    }
+
+    private boolean canAccess(PlaceDto dto, String requesterRole, String businessCode) {
+        if (isAdmin(requesterRole)) {
+            return true;
+        }
+        String normalizedBusinessCode = normalizeBusinessCode(businessCode);
+        return normalizedBusinessCode != null && normalizedBusinessCode.equalsIgnoreCase(dto.getBusinessCode());
+    }
+
+    private boolean isAdmin(String requesterRole) {
+        return requesterRole != null && com.wise.core.enums.UserRole.ADMIN.getValue().equalsIgnoreCase(requesterRole.trim());
+    }
+
+    private String normalizeBusinessCode(String businessCode) {
+        return businessCode == null || businessCode.isBlank() ? null : businessCode.trim().toUpperCase(Locale.ROOT);
     }
 }

@@ -10,7 +10,7 @@ import java.util.List;
 
 public interface OrderService {
 
-    OrderDto create(OrderDto dto, Integer userId);
+    OrderDto create(OrderDto dto, Integer userId, String userRole, String businessCode);
 
     OrderDto update(OrderDto dto);
 
@@ -18,21 +18,21 @@ public interface OrderService {
 
     OrderDto updatePaymentStatus(Integer id, PaymentStatus paymentStatus);
 
-    OrderDto close(Integer id, PaymentMethod paymentMethod, Integer userId, String userRole);
+    OrderDto close(Integer id, PaymentMethod paymentMethod, Integer userId, String userRole, String businessCode);
 
     OrderDto getById(Integer id);
 
     List<OrderDto> getByUserId(Integer userId);
 
-    List<OrderDto> getActiveByPlaceId(Integer placeId);
+    List<OrderDto> getActiveByPlaceId(Integer placeId, String requesterRole, String businessCode);
 
-    List<OrderDto> getActive();
+    List<OrderDto> getActive(String requesterRole, String businessCode);
 
-    List<OrderDto> getRecent();
+    List<OrderDto> getRecent(String requesterRole, String businessCode);
 
-    List<OrderDto> getAll();
+    List<OrderDto> getAll(String requesterRole, String businessCode);
 
-    DashboardSummaryDto getDashboardSummary();
+    DashboardSummaryDto getDashboardSummary(String requesterRole, String businessCode);
 
     void delete(Integer id);
 }

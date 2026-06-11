@@ -37,4 +37,7 @@ public class ProductEntity extends BaseEntity {
 
     @Column(name = "IS_ACTIVE")
     private Boolean isActive = true;
+
+    @Column(name = "BUSINESS_CODE", length = 50)
+    private String businessCode;
 }

@@ -32,6 +32,7 @@ import com.wise.core.enums.UserRole;
 import com.wise.core.exceptions.BadRequestException;
 import com.wise.core.exceptions.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -45,6 +46,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class MusicVoteService {
 
     private final SpotifyClient spotifyClient;
@@ -485,7 +487,7 @@ public class MusicVoteService {
 
     private void requireOwner(Integer ownerUserId, String userRole) {
         if (ownerUserId == null || ownerUserId == 0) {
-            log.warn("Auth context eksik veya anonim kullanıcı: userId={}, role={}", ownerUserId, userRole);
+           // log.warn("Auth context eksik veya anonim kullanıcı: userId={}, role={}", ownerUserId, userRole);
             // Geliştirme/Test aşamasında veya anonim erişime izin verilen durumlarda hata fırlatmak yerine devam edebiliriz
             // Veya daha açıklayıcı bir hata mesajı dönebiliriz.
             throw new BadRequestException("İşlem için geçerli bir kullanıcı oturumu gereklidir (UserId eksik).");
@@ -493,7 +495,7 @@ public class MusicVoteService {
         
         UserRole role = resolveRole(userRole);
         if (role != UserRole.ADMIN && role != UserRole.MANAGER && role != UserRole.WAITER && role != UserRole.CASHIER) {
-            log.error("Yetkisiz rol erişimi: userId={}, role={}", ownerUserId, userRole);
+            //log.error("Yetkisiz rol erişimi: userId={}, role={}", ownerUserId, userRole);
             throw new BadRequestException("Bu işlem için yetkiniz bulunmamaktadır (Gereken: ADMIN, MANAGER veya Personel).");
         }
     }

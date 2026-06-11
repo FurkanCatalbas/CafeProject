@@ -1,19 +1,12 @@
-package com.productservice.models;
+package com.orderservice.clients;
 
-import com.wise.core.models.BaseDto;
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 
 @Data
-@EqualsAndHashCode(callSuper = true)
-@NoArgsConstructor
-@AllArgsConstructor
-public class ProductDto extends BaseDto {
-
+public class ProductClientDto {
+    private Integer id;
     private String name;
     private String description;
     private BigDecimal price;

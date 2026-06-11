@@ -53,6 +53,9 @@ public class OrderEntity extends BaseEntity {
     @Column(name = "NOTE")
     private String note;
 
+    @Column(name = "BUSINESS_CODE", length = 50)
+    private String businessCode;
+
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItemEntity> orderItems = new ArrayList<>();
 }

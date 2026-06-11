@@ -53,6 +53,8 @@ public class JwtService {
         mapUser.put("username", userDto.getUsername());
         mapUser.put("fullName", userDto.getFirstName()+" "+userDto.getLastName());
         mapUser.put("userType", userDto.getType().toString());
+        mapUser.put("businessCode", userDto.getBusinessCode());
+        mapUser.put("businessName", userDto.getBusinessName());
 
         UserRole userRole = userDto.getRoleName() == null ? UserRole.CUSTOMER : userDto.getRoleName();
         mapUser.put("role", userRole.getValue());

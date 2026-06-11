@@ -9,6 +9,7 @@ import com.authservice.models.UserEntity;
 import com.authservice.repositorys.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wise.core.enums.UserRole;
+import com.wise.core.enums.UserStatus;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +21,8 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Locale;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -37,6 +40,10 @@ public class UserServiceImpl implements UserService {
         if (userDto.getRoleName() == null) {
             userDto.setRoleName(UserRole.CUSTOMER);
         }
+        if (userDto.getStatus() == null) {
+            userDto.setStatus(UserStatus.ACTIVE);
+        }
+        applyBusinessRegistrationRules(userDto);
         userDto.setPassword(passwordEncoder.encode(userDto.getPassword()));
 
         UserEntity userEntity = toEntity(userDto);
@@ -108,6 +115,50 @@ public class UserServiceImpl implements UserService {
 
     private UserEntity toEntity(UserDto dto) {
         return UserMapper.INSTANCE.toEntity(dto);
+    }
+
+    private void applyBusinessRegistrationRules(UserDto userDto) {
+        UserRole role = userDto.getRoleName();
+        if (role == UserRole.ADMIN) {
+            userDto.setBusinessCode(normalizeBusinessCode(userDto.getBusinessCode()));
+            return;
+        }
+
+        if (role == UserRole.MANAGER) {
+            if (isBlank(userDto.getBusinessCode())) {
+                userDto.setBusinessCode(generateBusinessCode());
+            } else {
+                userDto.setBusinessCode(normalizeBusinessCode(userDto.getBusinessCode()));
+            }
+            if (isBlank(userDto.getBusinessName())) {
+                userDto.setBusinessName(userDto.getFirstName() + " " + userDto.getLastName());
+            }
+            return;
+        }
+
+        userDto.setBusinessCode(normalizeBusinessCode(userDto.getBusinessCode()));
+        if (isBlank(userDto.getBusinessCode())) {
+            throw new com.wise.core.exceptions.BadRequestException("Isletme kodu zorunludur.");
+        }
+        if (!userRepository.existsByBusinessCode(userDto.getBusinessCode())) {
+            throw new com.wise.core.exceptions.BadRequestException("Gecersiz isletme kodu: " + userDto.getBusinessCode());
+        }
+    }
+
+    private String generateBusinessCode() {
+        String code;
+        do {
+            code = "BIZ-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase(Locale.ROOT);
+        } while (userRepository.existsByBusinessCode(code));
+        return code;
+    }
+
+    private String normalizeBusinessCode(String businessCode) {
+        return isBlank(businessCode) ? null : businessCode.trim().toUpperCase(Locale.ROOT);
+    }
+
+    private boolean isBlank(String value) {
+        return value == null || value.isBlank();
     }
 
     private List<UserDto> toDtos(List<UserEntity> entities) {

@@ -10,6 +10,7 @@ import {
   Music,
   X
 } from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -18,15 +19,17 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
   const location = useLocation();
+  const { user } = useAuth();
+  const role = user?.roleName || user?.role || 'CUSTOMER';
 
   const menuItems = [
-    { path: '/dashboard', icon: LayoutDashboard, label: 'Panolar' },
-    { path: '/users', icon: Users, label: 'Çalışanlar' },
-    { path: '/tables', icon: MapPin, label: 'Masa Yönetimi' },
-    { path: '/products', icon: Package, label: 'Ürünler' },
-    { path: '/orders', icon: ShoppingCart, label: 'Siparişler' },
-    { path: '/music', icon: Music, label: 'Müzik' },
-  ];
+    { path: '/dashboard', icon: LayoutDashboard, label: 'Panolar', roles: ['ADMIN', 'MANAGER'] },
+    { path: '/users', icon: Users, label: 'Çalışanlar', roles: ['MANAGER'] },
+    { path: '/tables', icon: MapPin, label: 'Masa Yönetimi', roles: ['MANAGER', 'WAITER', 'CASHIER'] },
+    { path: '/products', icon: Package, label: 'Ürünler', roles: ['MANAGER', 'WAITER', 'CASHIER', 'CUSTOMER'] },
+    { path: '/orders', icon: ShoppingCart, label: 'Siparişler', roles: ['MANAGER', 'WAITER', 'CASHIER', 'CUSTOMER'] },
+    { path: '/music', icon: Music, label: 'Müzik', roles: ['MANAGER', 'WAITER', 'CASHIER'] },
+  ].filter((item) => item.roles.includes(role));
 
   return (
     <>
