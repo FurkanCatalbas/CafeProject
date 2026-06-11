@@ -8,6 +8,8 @@ import java.util.Optional;
 
 @Repository
 public interface MusicVenueSessionRepository extends JpaRepository<MusicVenueSessionEntity, Integer> {
+    Optional<MusicVenueSessionEntity> findByPlaceIdAndOwnerUserId(Integer placeId, Integer ownerUserId);
+
     Optional<MusicVenueSessionEntity> findByPlaceId(Integer placeId);
 
     Optional<MusicVenueSessionEntity> findByQrCode(String qrCode);

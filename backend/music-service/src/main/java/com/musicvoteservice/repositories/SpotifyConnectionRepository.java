@@ -8,5 +8,5 @@ import java.util.Optional;
 
 @Repository
 public interface SpotifyConnectionRepository extends JpaRepository<SpotifyConnectionEntity, Integer> {
-    Optional<SpotifyConnectionEntity> findByPlaceId(Integer placeId);
+    Optional<SpotifyConnectionEntity> findByPlaceIdAndOwnerUserId(Integer placeId, Integer ownerUserId);
 }

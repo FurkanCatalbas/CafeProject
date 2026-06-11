@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 @Table(
         name = "MUSIC_SPOTIFY_CONNECTIONS",
         uniqueConstraints = {
-                @UniqueConstraint(name = "UK_MUSIC_SPOTIFY_PLACE", columnNames = "PLACE_ID")
+                @UniqueConstraint(name = "UK_MUSIC_SPOTIFY_PLACE_OWNER", columnNames = {"PLACE_ID", "OWNER_USER_ID"})
         }
 )
 @Data

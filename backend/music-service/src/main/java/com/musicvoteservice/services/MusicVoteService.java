@@ -96,7 +96,7 @@ public class MusicVoteService {
         SpotifyTokenResponse tokenResponse = spotifyClient.exchangeCode(code);
         JsonNode profile = spotifyClient.getCurrentUser(tokenResponse.getAccessToken());
 
-        SpotifyConnectionEntity connection = spotifyConnectionRepository.findByPlaceId(stateEntity.getPlaceId())
+        SpotifyConnectionEntity connection = spotifyConnectionRepository.findByPlaceIdAndOwnerUserId(stateEntity.getPlaceId(), stateEntity.getOwnerUserId())
                 .orElseGet(SpotifyConnectionEntity::new);
         connection.setOwnerUserId(stateEntity.getOwnerUserId());
         connection.setPlaceId(stateEntity.getPlaceId());
@@ -121,7 +121,7 @@ public class MusicVoteService {
         requireOwner(ownerUserId, userRole);
         SpotifyConnectionStatusDto status = new SpotifyConnectionStatusDto();
         status.setPlaceId(placeId);
-        spotifyConnectionRepository.findByPlaceId(placeId).ifPresent(connection -> {
+        spotifyConnectionRepository.findByPlaceIdAndOwnerUserId(placeId, ownerUserId).ifPresent(connection -> {
             status.setConnected(true);
             status.setSpotifyUserId(connection.getSpotifyUserId());
             status.setDisplayName(connection.getDisplayName());
@@ -139,7 +139,7 @@ public class MusicVoteService {
     @Transactional
     public List<SpotifyPlaylistDto> getPlaylists(Integer placeId, Integer ownerUserId, String userRole) {
         requireOwner(ownerUserId, userRole);
-        SpotifyConnectionEntity connection = getConnection(placeId);
+        SpotifyConnectionEntity connection = getConnection(placeId, ownerUserId);
         String accessToken = validAccessToken(connection);
         return spotifyClient.getCurrentUserPlaylists(accessToken);
     }
@@ -152,7 +152,7 @@ public class MusicVoteService {
         }
 
         MusicVenueSessionEntity session = getOrCreateSessionEntity(placeId, ownerUserId);
-        SpotifyConnectionEntity connection = getConnection(placeId);
+        SpotifyConnectionEntity connection = getConnection(placeId, ownerUserId);
         String accessToken = validAccessToken(connection);
 
         String playlistName = spotifyClient.getPlaylistName(accessToken, request.getPlaylistId());
@@ -269,7 +269,7 @@ public class MusicVoteService {
 
         MusicTrackEntity winner = musicTrackRepository.findByIdAndPlaceId(winnerTrackId, placeId)
                 .orElseThrow(() -> new ResourceNotFoundException("Kazanan sarki bulunamadi."));
-        SpotifyConnectionEntity connection = getConnection(placeId);
+        SpotifyConnectionEntity connection = getConnection(placeId, ownerUserId);
         spotifyClient.startPlayback(
                 validAccessToken(connection),
                 winner.getSpotifyUri(),
@@ -357,8 +357,8 @@ public class MusicVoteService {
         return toSessionDto(getSessionByQr(qrCode));
     }
 
-    private SpotifyConnectionEntity getConnection(Integer placeId) {
-        return spotifyConnectionRepository.findByPlaceId(placeId)
+    private SpotifyConnectionEntity getConnection(Integer placeId, Integer ownerUserId) {
+        return spotifyConnectionRepository.findByPlaceIdAndOwnerUserId(placeId, ownerUserId)
                 .orElseThrow(() -> new BadRequestException("Bu mekan icin Spotify hesabi bagli degil."));
     }
 
@@ -382,13 +382,13 @@ public class MusicVoteService {
         return connection.getAccessToken();
     }
 
-    private synchronized MusicVenueSessionEntity getOrCreateSessionEntity(Integer placeId, Integer ownerUserId) {
+    private MusicVenueSessionEntity getOrCreateSessionEntity(Integer placeId, Integer ownerUserId) {
         if (placeId == null) {
             throw new BadRequestException("Mekan id zorunludur.");
         }
         
-        // Önce mevcut olanı bulmaya çalış
-        java.util.Optional<MusicVenueSessionEntity> existing = musicVenueSessionRepository.findByPlaceId(placeId);
+        // Önce bu kullanıcıya ait olanı bulmaya çalış
+        java.util.Optional<MusicVenueSessionEntity> existing = musicVenueSessionRepository.findByPlaceIdAndOwnerUserId(placeId, ownerUserId);
         if (existing.isPresent()) {
             return existing.get();
         }
@@ -406,7 +406,7 @@ public class MusicVoteService {
             return musicVenueSessionRepository.saveAndFlush(session);
         } catch (Exception e) {
             // Eğer o sırada başka bir istek eklediyse veritabanına tekrar bak
-            return musicVenueSessionRepository.findByPlaceId(placeId)
+            return musicVenueSessionRepository.findByPlaceIdAndOwnerUserId(placeId, ownerUserId)
                     .orElseThrow(() -> new BadRequestException("Muzik oturumu olusturulamadi veya alinamadi."));
         }
     }
@@ -494,9 +494,9 @@ public class MusicVoteService {
         }
         
         UserRole role = resolveRole(userRole);
-        if (role != UserRole.ADMIN && role != UserRole.MANAGER && role != UserRole.WAITER && role != UserRole.CASHIER) {
+        if (role != UserRole.ADMIN && role != UserRole.MANAGER) {
             //log.error("Yetkisiz rol erişimi: userId={}, role={}", ownerUserId, userRole);
-            throw new BadRequestException("Bu işlem için yetkiniz bulunmamaktadır (Gereken: ADMIN, MANAGER veya Personel).");
+            throw new BadRequestException("Bu işlem için yetkiniz bulunmamaktadır (Sadece MÜDÜR veya ADMIN).");
         }
     }
 

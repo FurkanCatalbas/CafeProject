@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 @Table(
         name = "MUSIC_VENUE_SESSIONS",
         uniqueConstraints = {
-                @UniqueConstraint(name = "UK_MUSIC_SESSION_PLACE", columnNames = "PLACE_ID"),
+                @UniqueConstraint(name = "UK_MUSIC_SESSION_PLACE_OWNER", columnNames = {"PLACE_ID", "OWNER_USER_ID"}),
                 @UniqueConstraint(name = "UK_MUSIC_SESSION_QR", columnNames = "QR_CODE")
         }
 )
