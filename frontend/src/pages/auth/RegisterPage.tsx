@@ -14,7 +14,7 @@ const RegisterPage: React.FC = () => {
     firstName: '',
     lastName: '',
     emailAddress: '',
-    roleName: 'CUSTOMER',
+    roleName: 'MANAGER',
     businessCode: '',
     businessName: '',
     password: '',
@@ -165,7 +165,6 @@ const RegisterPage: React.FC = () => {
                   onChange={handleChange}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
                 >
-                  <option value="CUSTOMER">Müşteri</option>
                   <option value="ADMIN">Yönetici</option>
                   <option value="MANAGER">Müdür</option>
                   <option value="WAITER">Garson</option>

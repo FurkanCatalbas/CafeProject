@@ -110,7 +110,7 @@ const PlacesPage: React.FC = () => {
       await placesService.delete(id);
       await loadPlaces();
     } catch (e: any) {
-      setError(e?.response?.data?.message || 'Masa silinemedi.');
+      setError(e?.response?.data?.uimessage?.text || e?.response?.data?.error || e?.response?.data?.message || 'Masa silinemedi.');
     }
   };
 

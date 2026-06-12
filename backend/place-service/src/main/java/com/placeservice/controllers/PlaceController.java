@@ -82,7 +82,7 @@ public class PlaceController {
         return ResponseEntity.ok(createQueryResponse(dto));
     }
 
-    @RequiredRole(UserRole.ADMIN)
+    @RequiredRole({UserRole.ADMIN, UserRole.MANAGER})
     @DeleteMapping("/{id}")
     public ResponseEntity<QueryResponse<String>> delete(@PathVariable("id") Integer id) {
         QueryResponse<String> queryResponse = new QueryResponse<>();

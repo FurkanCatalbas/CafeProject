@@ -171,7 +171,10 @@ public class PlaceServiceImpl implements PlacesService {
     }
 
     private boolean isAdmin(String requesterRole) {
-        return requesterRole != null && com.wise.core.enums.UserRole.ADMIN.getValue().equalsIgnoreCase(requesterRole.trim());
+        return requesterRole != null && (
+                com.wise.core.enums.UserRole.ADMIN.getValue().equalsIgnoreCase(requesterRole.trim()) ||
+                "ADMIN".equalsIgnoreCase(requesterRole.trim())
+        );
     }
 
     private String normalizeBusinessCode(String businessCode) {
