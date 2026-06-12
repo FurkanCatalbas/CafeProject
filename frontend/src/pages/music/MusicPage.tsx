@@ -98,15 +98,18 @@ const MusicPage: React.FC = () => {
   useEffect(() => {
     let interval: NodeJS.Timeout;
     
-    if (session?.selectedPlaylistId && currentRound && currentRound.status === 'ACTIVE') {
+    if (spotifyStatus?.connected && session) {
       interval = setInterval(() => {
         musicService.getCurrentRound(placeId)
           .then(data => {
-            if (!data) setCurrentRound(null);
-            else setCurrentRound(data);
+            setCurrentRound(data);
+            // Eğer bir tur varsa ve track listesi boşsa onları da çek (tutarlılık için)
+            if (data && tracks.length === 0) {
+              musicService.getTracks(placeId).then(setTracks).catch(() => {});
+            }
           })
           .catch(() => {
-            // Sessizce devam et veya oylama bittiyse temizle
+            // Sessizce devam et
           });
       }, 4000); 
     }
@@ -114,7 +117,7 @@ const MusicPage: React.FC = () => {
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [session, currentRound, placeId]);
+  }, [spotifyStatus?.connected, session, tracks.length, placeId]);
 
   const handleConnectSpotify = async () => {
     try {

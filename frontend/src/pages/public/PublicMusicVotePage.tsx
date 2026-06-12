@@ -11,14 +11,38 @@ const PublicMusicVotePage: React.FC = () => {
   const [voted, setVoted] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Voter identification and persistence
+  const [voterKey] = useState(() => {
+    let key = localStorage.getItem('music_voter_key');
+    if (!key) {
+      key = Math.random().toString(36).substring(2) + Date.now().toString(36);
+      localStorage.setItem('music_voter_key', key);
+    }
+    return key;
+  });
+
+  const checkIfVoted = useCallback((roundId: number) => {
+    const votedRounds = JSON.parse(localStorage.getItem('voted_rounds') || '{}');
+    return !!votedRounds[roundId];
+  }, []);
+
+  const markAsVoted = useCallback((roundId: number) => {
+    const votedRounds = JSON.parse(localStorage.getItem('voted_rounds') || '{}');
+    votedRounds[roundId] = true;
+    localStorage.setItem('voted_rounds', JSON.stringify(votedRounds));
+    setVoted(true);
+  }, []);
+
   const fetchSession = useCallback(async (isInitial = false) => {
     if (!qrCode) return;
     if (isInitial) setLoading(true);
     try {
       const data = await musicService.getPublicSession(qrCode);
       
-      // Eğer round değişmişse 'voted' durumunu sıfırla
-      if (session?.currentRound?.id !== data.currentRound?.id) {
+      const currentRoundId = data.currentRound?.id;
+      if (currentRoundId) {
+        setVoted(checkIfVoted(currentRoundId));
+      } else {
         setVoted(false);
       }
       
@@ -30,7 +54,7 @@ const PublicMusicVotePage: React.FC = () => {
     } finally {
       if (isInitial) setLoading(false);
     }
-  }, [qrCode, session?.currentRound?.id]);
+  }, [qrCode, checkIfVoted]);
 
   useEffect(() => {
     fetchSession(true);
@@ -40,15 +64,22 @@ const PublicMusicVotePage: React.FC = () => {
 
   const handleVote = async (trackId: number) => {
     if (!qrCode || !session?.currentRound || voted || voting) return;
+    const roundId = session.currentRound.id;
+    
     try {
       setVoting(true);
-      await musicService.vote(qrCode, session.currentRound.id, trackId);
-      setVoted(true);
-      // Oyu hemen yansıtmak için session'ı manuel güncelle (opsiyonel)
-      await fetchSession(false);
+      const result = await musicService.vote(qrCode, roundId, trackId, voterKey);
+      
+      if (result.duplicate) {
+        markAsVoted(roundId);
+      } else if (result.accepted) {
+        markAsVoted(roundId);
+        // Oyu hemen yansıtmak için session'ı manuel güncelle
+        await fetchSession(false);
+      }
     } catch (err: any) {
       if (err.response?.data?.duplicate || err.response?.data?.message?.includes('duplicate')) {
-        setVoted(true);
+        markAsVoted(roundId);
       } else {
         alert('Oy verme işlemi başarısız oldu.');
       }

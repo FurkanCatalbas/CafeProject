@@ -112,10 +112,11 @@ export const musicService = {
     return unwrapApiData<any>(response.data);
   },
 
-  vote: async (qrCode: string, roundId: number, trackId: number) => {
+  vote: async (qrCode: string, roundId: number, trackId: number, voterKey?: string) => {
     const response = await api.post(`/music-service/api/music-votes/public/${qrCode}/vote`, {
       roundId,
-      trackId
+      trackId,
+      voterKey
     });
     return unwrapApiData<any>(response.data);
   },
