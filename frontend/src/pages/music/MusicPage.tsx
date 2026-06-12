@@ -168,12 +168,17 @@ const MusicPage: React.FC = () => {
     try {
       const updatedSession = await musicService.selectPlaylist(placeId, playlistId);
       setSession(updatedSession);
-      setCurrentRound(null); // Playlist değişince oylama düşmeli
+      setCurrentRound(null);
       const trackData = await musicService.getTracks(placeId);
       setTracks(trackData);
       alert('Playlist başarıyla seçildi.');
     } catch (err: any) {
-      alert(err.response?.data?.message || 'Playlist seçilemedi. Backend loglarını kontrol edin.');
+      const errMsg =
+        err.response?.data?.uimessage?.text ||
+        err.response?.data?.message ||
+        err.message ||
+        'Playlist seçilemedi.';
+      alert(errMsg);
     } finally {
       setActionLoading(false);
     }
@@ -185,7 +190,12 @@ const MusicPage: React.FC = () => {
       const round = await musicService.startNextRound(placeId);
       setCurrentRound(round);
     } catch (err: any) {
-      alert(err.response?.data?.message || 'Oylama başlatılamadı.');
+      const errMsg =
+        err.response?.data?.uimessage?.text ||
+        err.response?.data?.message ||
+        err.message ||
+        'Oylama başlatılamadı.';
+      alert(errMsg);
     } finally {
       setActionLoading(false);
     }
@@ -194,16 +204,20 @@ const MusicPage: React.FC = () => {
   const handleCloseRound = async () => {
     setActionLoading(true);
     try {
-      const closedRound = await musicService.closeRound(placeId);
+      await musicService.closeRound(placeId);
       setCurrentRound(null);
       alert(`Oylama bitti! Kazanan şarkı Spotify'da başlatıldı.`);
       await loadInitialData(true);
     } catch (err: any) {
-      // Eğer backend'de oylama zaten yoksa, frontend'i de temizle
-      if (err.response?.status === 404 || err.response?.data?.message?.includes('bulunamadi')) {
+      const errMsg =
+        err.response?.data?.uimessage?.text ||
+        err.response?.data?.message ||
+        err.message ||
+        'Oylama kapatılamadı.';
+      if (err.response?.status === 404 || errMsg.includes('bulunamadi')) {
         setCurrentRound(null);
       }
-      alert(err.response?.data?.message || 'Oylama kapatılamadı.');
+      alert(errMsg);
     } finally {
       setActionLoading(false);
     }

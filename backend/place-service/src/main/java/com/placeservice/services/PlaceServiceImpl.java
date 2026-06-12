@@ -39,11 +39,42 @@ public class PlaceServiceImpl implements PlacesService {
 
     @Override
     public PlaceDto update(PlaceDto placeDto, String requesterRole, String businessCode) {
-        PlaceDto existing = getById(placeDto.getId());
-        ensureSameBusiness(existing, requesterRole, businessCode);
-        applyRequesterBusiness(placeDto, requesterRole, businessCode);
-        PlaceEntity entity = placesRepository.save(toEntity(placeDto));
-        return toDto(entity);
+        PlaceEntity entity = placesRepository.findById(placeDto.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Masa bulunamadi: " + placeDto.getId()));
+        
+        // Yetki kontrolü
+        PlaceDto existingDto = toDto(entity);
+        ensureSameBusiness(existingDto, requesterRole, businessCode);
+
+        // Alanları güncelle
+        if (placeDto.getName() != null && !placeDto.getName().isBlank()) {
+            entity.setName(placeDto.getName().trim());
+        }
+        
+        if (placeDto.getStatus() != null) {
+            entity.setStatus(placeDto.getStatus());
+        }
+        
+        if (placeDto.getManagerId() != null) {
+            entity.setManagerId(placeDto.getManagerId());
+        }
+
+        // QR kodu koru veya yoksa üret
+        if (placeDto.getQrCode() != null && !placeDto.getQrCode().isBlank()) {
+            entity.setQrCode(placeDto.getQrCode());
+        } else if (entity.getQrCode() == null || entity.getQrCode().isBlank()) {
+            entity.setQrCode("T-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
+        }
+        
+        // İşletme kodunu koru veya güncelle
+        if (isAdmin(requesterRole) && placeDto.getBusinessCode() != null) {
+            entity.setBusinessCode(normalizeBusinessCode(placeDto.getBusinessCode()));
+        } else if (!isAdmin(requesterRole)) {
+            entity.setBusinessCode(normalizeBusinessCode(businessCode));
+        }
+
+        PlaceEntity updatedEntity = placesRepository.save(entity);
+        return toDto(updatedEntity);
     }
 
     @Override

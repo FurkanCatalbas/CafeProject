@@ -12,7 +12,11 @@ public interface MusicVenueSessionRepository extends JpaRepository<MusicVenueSes
 
     Optional<MusicVenueSessionEntity> findByPlaceId(Integer placeId);
 
+    Optional<MusicVenueSessionEntity> findFirstByPlaceIdOrderByIdAsc(Integer placeId);
+
     Optional<MusicVenueSessionEntity> findByQrCode(String qrCode);
 
     boolean existsByQrCode(String qrCode);
+
+    Optional<MusicVenueSessionEntity> findFirstByActiveTrueOrderByIdAsc();
 }

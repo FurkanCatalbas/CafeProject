@@ -31,8 +31,8 @@ interface Order {
 }
 
 interface OrderItem {
-  id: number;
-  productId?: number;
+  id?: number;
+  productId: number;
   productName: string;
   quantity: number;
   unitPrice: number;
@@ -76,8 +76,7 @@ const OrdersPage: React.FC = () => {
     placeId: '',
     paymentMethod: 'CASH' as Order['paymentMethod'],
     note: '',
-    productId: '',
-    quantity: '1',
+    items: [] as { productId: string; quantity: string }[],
   });
 
   const loadOrders = useCallback(async () => {
@@ -140,8 +139,7 @@ const OrdersPage: React.FC = () => {
       placeId: '',
       paymentMethod: 'CASH',
       note: '',
-      productId: '',
-      quantity: '1',
+      items: [],
     });
   };
 
@@ -151,31 +149,70 @@ const OrdersPage: React.FC = () => {
     resetNewOrder();
   };
 
+  const addNewItemToOrder = () => {
+    setNewOrder(prev => ({
+      ...prev,
+      items: [...prev.items, { productId: '', quantity: '1' }]
+    }));
+  };
+
+  const removeItemFromOrder = (index: number) => {
+    setNewOrder(prev => ({
+      ...prev,
+      items: prev.items.filter((_, i) => i !== index)
+    }));
+  };
+
+  const updateItemInOrder = (index: number, field: 'productId' | 'quantity', value: string) => {
+    setNewOrder(prev => {
+      const newItems = [...prev.items];
+      newItems[index] = { ...newItems[index], [field]: value };
+      return { ...prev, items: newItems };
+    });
+  };
+
   const handleCreateOrder = async () => {
     const placeId = Number(newOrder.placeId);
-    const productId = Number(newOrder.productId);
-    const quantity = Number(newOrder.quantity);
-    const selectedProduct = products.find((product) => product.id === productId);
-    const unitPrice = Number(selectedProduct?.price ?? NaN);
-
+    
     if (!Number.isFinite(placeId) || placeId <= 0) {
       setError('Sipariş oluşturmak için listeden bir masa seçin.');
       return;
     }
 
-    if (!selectedProduct || !Number.isFinite(productId) || productId <= 0) {
-      setError('Sipariş oluşturmak için stoktaki ürünlerden bir ürün seçin.');
+    if (newOrder.items.length === 0) {
+      setError('Sipariş için en az bir ürün eklemelisiniz.');
       return;
     }
 
-    if (!Number.isFinite(quantity) || quantity <= 0 || quantity > Number(selectedProduct.stock ?? 0)) {
-      setError('Adet, seçilen ürünün stok miktarını aşmayacak şekilde girilmelidir.');
-      return;
-    }
+    const orderItems: OrderItem[] = [];
+    let totalAmount = 0;
 
-    if (!Number.isFinite(unitPrice) || unitPrice < 0) {
-      setError('Seçilen ürünün geçerli bir fiyatı yok.');
-      return;
+    for (const item of newOrder.items) {
+      const productId = Number(item.productId);
+      const quantity = Number(item.quantity);
+      const product = products.find(p => p.id === productId);
+
+      if (!product || productId <= 0) {
+        setError('Siparişteki ürünlerden biri geçersiz.');
+        return;
+      }
+
+      if (!Number.isFinite(quantity) || quantity <= 0 || (product.stock !== undefined && quantity > product.stock)) {
+        setError(`${product.name} için miktar stok sınırlarını aşıyor.`);
+        return;
+      }
+
+      const unitPrice = Number(product.price ?? 0);
+      const itemTotal = unitPrice * quantity;
+      
+      orderItems.push({
+        productId,
+        productName: product.name,
+        quantity,
+        unitPrice,
+        totalPrice: itemTotal
+      });
+      totalAmount += itemTotal;
     }
 
     setIsSubmitting(true);
@@ -185,20 +222,12 @@ const OrdersPage: React.FC = () => {
         userId: 0,
         placeId,
         orderDate: new Date().toISOString(),
-        totalAmount: quantity * unitPrice,
+        totalAmount,
         status: 'PENDING',
         paymentStatus: 'UNPAID',
         paymentMethod: newOrder.paymentMethod,
         note: newOrder.note.trim() || undefined,
-        orderItems: [
-          {
-            productId,
-            productName: selectedProduct.name,
-            quantity,
-            unitPrice,
-            totalPrice: quantity * unitPrice,
-          },
-        ],
+        orderItems,
       });
       await loadOrders();
       closeCreateModal();
@@ -298,6 +327,24 @@ const OrdersPage: React.FC = () => {
     }
   };
 
+  const handleQuickStatusUpdate = async (id: number, newStatus: Order['status']) => {
+    if (newStatus === 'CANCELLED') {
+      const confirmed = window.confirm('Bu siparişi iptal etmek istediğinizden emin misiniz?');
+      if (!confirmed) return;
+    }
+
+    setIsSubmitting(true);
+    setError(null);
+    try {
+      await ordersService.updateStatus(id, newStatus);
+      await loadOrders();
+    } catch (e: any) {
+      setError(e?.response?.data?.message || 'Durum güncellenemedi.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'PENDING': return 'bg-yellow-600';
@@ -369,13 +416,6 @@ const OrdersPage: React.FC = () => {
     const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
-
-  const selectedProduct = products.find((product) => product.id === Number(newOrder.productId));
-  const selectedProductPrice = Number(selectedProduct?.price ?? 0);
-  const selectedQuantity = Number(newOrder.quantity);
-  const newOrderTotal = selectedProduct && Number.isFinite(selectedQuantity)
-    ? selectedProductPrice * selectedQuantity
-    : 0;
 
   if (loading) {
     return (
@@ -504,18 +544,44 @@ const OrdersPage: React.FC = () => {
                       <button
                         onClick={() => handleOpenOrderDetails(order.id)}
                         className="p-2 text-gray-500 hover:text-gray-800 hover:bg-gray-100 rounded-lg"
+                        title="Detaylar"
                       >
                         <Eye className="w-4 h-4" />
                       </button>
+
+                      {/* Hızlı İşlem Butonları */}
+                      {order.status !== 'PAID' && order.status !== 'CANCELLED' && (
+                        <>
+                          <button
+                            onClick={() => handleQuickStatusUpdate(order.id, 'PAID')}
+                            disabled={isSubmitting}
+                            className="p-2 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 rounded-lg transition-colors"
+                            title="Ödendi Olarak İşaretle"
+                          >
+                            <CheckCircle className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleQuickStatusUpdate(order.id, 'CANCELLED')}
+                            disabled={isSubmitting}
+                            className="p-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
+                            title="Siparişi İptal Et"
+                          >
+                            <XCircle className="w-4 h-4" />
+                          </button>
+                        </>
+                      )}
+
                       <button
                         onClick={() => handleOpenEditOrder(order)}
                         className="p-2 text-gray-500 hover:text-gray-800 hover:bg-gray-100 rounded-lg"
+                        title="Düzenle"
                       >
                         <Edit className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => handleDeleteOrder(order.id)}
                         className="p-2 text-gray-400 hover:text-red-400 hover:bg-red-900/20 rounded-lg"
+                        title="Sil"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -564,41 +630,73 @@ const OrdersPage: React.FC = () => {
                   <option value="ONLINE">Çevrimiçi</option>
                 </select>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Sipariş Kalemleri</label>
-                <div className="space-y-2">
-                  <div className="flex flex-wrap gap-2">
-                    <select
-                      value={newOrder.productId}
-                      onChange={(e) => setNewOrder((prev) => ({ ...prev, productId: e.target.value }))}
-                      className="input-field min-w-[220px] flex-1"
-                    >
-                      <option value="">Stoktaki ürünlerden seçin</option>
-                      {products.map((product) => (
-                        <option key={product.id} value={product.id}>
-                          {product.name} - {formatTryCurrency(product.price)} / Stok: {product.stock}
-                        </option>
-                      ))}
-                    </select>
-                    <input
-                      type="number"
-                      placeholder="Adet"
-                      min={1}
-                      max={selectedProduct?.stock ?? undefined}
-                      value={newOrder.quantity}
-                      onChange={(e) => setNewOrder((prev) => ({ ...prev, quantity: e.target.value }))}
-                      className="input-field w-20"
-                    />
-                  </div>
-                  <div className="rounded-lg bg-gray-50 px-4 py-3 text-sm text-gray-700">
-                    <div>Birim fiyat: <span className="font-semibold">{selectedProduct ? formatTryCurrency(selectedProductPrice) : '-'}</span></div>
-                    <div>Toplam: <span className="font-semibold">{selectedProduct ? formatTryCurrency(newOrderTotal) : '-'}</span></div>
-                  </div>
-                  {products.length === 0 && (
-                    <p className="text-sm text-amber-700">Stokta aktif ürün bulunamadı. Önce ürün ekleyin veya stok güncelleyin.</p>
+              
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <label className="block text-sm font-medium text-gray-700">Sipariş Kalemleri</label>
+                  <button
+                    type="button"
+                    onClick={addNewItemToOrder}
+                    className="text-sm text-blue-600 hover:text-blue-700 font-bold flex items-center gap-1"
+                  >
+                    <Plus className="w-4 h-4" /> Ürün Ekle
+                  </button>
+                </div>
+
+                <div className="space-y-3">
+                  {newOrder.items.map((item, index) => {
+                    const product = products.find(p => p.id === Number(item.productId));
+                    return (
+                      <div key={index} className="flex gap-2 items-start bg-gray-50 p-3 rounded-xl border border-gray-100">
+                        <select
+                          value={item.productId}
+                          onChange={(e) => updateItemInOrder(index, 'productId', e.target.value)}
+                          className="input-field flex-1"
+                        >
+                          <option value="">Ürün seçin</option>
+                          {products.map((p) => (
+                            <option key={p.id} value={p.id}>
+                              {p.name} ({formatTryCurrency(p.price)})
+                            </option>
+                          ))}
+                        </select>
+                        <input
+                          type="number"
+                          placeholder="Adet"
+                          min={1}
+                          value={item.quantity}
+                          onChange={(e) => updateItemInOrder(index, 'quantity', e.target.value)}
+                          className="input-field w-20"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeItemFromOrder(index)}
+                          className="p-2 text-red-500 hover:bg-red-50 rounded-lg"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    );
+                  })}
+                  
+                  {newOrder.items.length === 0 && (
+                    <div className="text-center py-4 border-2 border-dashed border-gray-200 rounded-xl text-gray-500 text-sm">
+                      Henüz ürün eklenmedi. "Ürün Ekle" butonuna basarak başlayın.
+                    </div>
                   )}
                 </div>
+
+                <div className="rounded-xl bg-blue-50 px-4 py-3 flex justify-between items-center border border-blue-100">
+                  <span className="text-blue-700 font-medium">Toplam Tutar:</span>
+                  <span className="text-xl font-bold text-blue-900">
+                    {formatTryCurrency(newOrder.items.reduce((total, item) => {
+                      const product = products.find(p => p.id === Number(item.productId));
+                      return total + (Number(product?.price ?? 0) * Number(item.quantity || 0));
+                    }, 0))}
+                  </span>
+                </div>
               </div>
+
               <textarea
                 rows={2}
                 placeholder="Not (opsiyonel)"
@@ -615,7 +713,7 @@ const OrdersPage: React.FC = () => {
                 </button>
                 <button
                   onClick={handleCreateOrder}
-                  disabled={isSubmitting || places.length === 0 || products.length === 0}
+                  disabled={isSubmitting || places.length === 0 || products.length === 0 || newOrder.items.length === 0}
                   className="btn-primary disabled:opacity-50"
                 >
                   {isSubmitting ? 'Oluşturuluyor...' : 'Sipariş Oluştur'}

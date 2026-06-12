@@ -142,19 +142,32 @@ const UsersPage: React.FC = () => {
     }
   };
 
-  const handleDeleteUser = async (id: number) => {
-    const confirmed = window.confirm('Bu kullanıcıyı silmek istiyor musunuz?');
+  const handleDeleteUser = async (targetUser: User) => {
+    if (currentRole === 'MANAGER' && (targetUser.roleName === 'ADMIN' || targetUser.roleName === 'MANAGER')) {
+      setError('Müdür veya Yönetici yetkisine sahip kullanıcıları silme yetkiniz yok.');
+      return;
+    }
+
+    const confirmed = window.confirm(`"${targetUser.firstName} ${targetUser.lastName}" kullanıcısını silmek istiyor musunuz?`);
     if (!confirmed) {
       return;
     }
 
     setError(null);
     try {
-      await usersService.delete(id);
+      await usersService.delete(targetUser.id);
       await loadUsers();
     } catch (e: any) {
       setError(e?.response?.data?.message || 'Kullanıcı silinemedi.');
     }
+  };
+
+  const canDeleteUser = (targetUser: User) => {
+    if (currentRole === 'ADMIN') return true;
+    if (currentRole === 'MANAGER') {
+      return targetUser.roleName !== 'ADMIN' && targetUser.roleName !== 'MANAGER';
+    }
+    return false;
   };
 
   const handleOpenEditUser = (user: User) => {
@@ -381,12 +394,14 @@ const UsersPage: React.FC = () => {
                     >
                       <Edit className="w-4 h-4" />
                     </button>
-                    <button
-                      onClick={() => handleDeleteUser(user.id)}
-                      className="p-2 text-gray-400 hover:text-red-400 hover:bg-red-900/20 rounded-lg"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                    {canDeleteUser(user) && (
+                      <button
+                        onClick={() => handleDeleteUser(user)}
+                        className="p-2 text-gray-400 hover:text-red-400 hover:bg-red-900/20 rounded-lg"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
                   </div>
                 </td>
               </tr>

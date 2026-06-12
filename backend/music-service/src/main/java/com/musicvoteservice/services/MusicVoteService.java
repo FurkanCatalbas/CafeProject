@@ -36,6 +36,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -58,6 +59,7 @@ public class MusicVoteService {
     private final MusicTrackRepository musicTrackRepository;
     private final VoteRoundRepository voteRoundRepository;
     private final VoteRepository voteRepository;
+    private final TransactionTemplate transactionTemplate;
     private final SecureRandom secureRandom = new SecureRandom();
 
     @Transactional
@@ -167,36 +169,50 @@ public class MusicVoteService {
         return spotifyClient.getCurrentUserPlaylists(accessToken);
     }
 
-    @Transactional
+    // @Transactional yok — Spotify HTTP cagrilari transaction disinda yapilir
     public MusicSessionDto selectPlaylist(Integer placeId, SelectPlaylistRequest request, Integer ownerUserId, String userRole) {
         requireOwner(ownerUserId, userRole);
         if (request == null || request.getPlaylistId() == null || request.getPlaylistId().isBlank()) {
             throw new BadRequestException("Playlist id zorunludur.");
         }
 
-        MusicVenueSessionEntity session = getOrCreateSessionEntity(placeId, ownerUserId);
-        SpotifyConnectionEntity connection = getConnection(placeId, ownerUserId);
-        String accessToken = validAccessToken(connection);
+        // Asama 1: Access token al (kisa transaction)
+        String accessToken = transactionTemplate.execute(status -> {
+            SpotifyConnectionEntity connection = getConnection(placeId, ownerUserId);
+            return validAccessToken(connection);
+        });
 
+        // Asama 2: Spotify HTTP cagrisi — DB connection TUTULMUYOR
         String playlistName = spotifyClient.getPlaylistName(accessToken, request.getPlaylistId());
         List<TrackDto> tracks = spotifyClient.getPlaylistTracks(accessToken, request.getPlaylistId());
         if (tracks.size() < 2) {
             throw new BadRequestException("Oylama icin playlist en az iki Spotify sarkisi icermelidir.");
         }
+        log.info("Playlist seciliyor: placeId={}, playlistId={}, trackCount={}", placeId, request.getPlaylistId(), tracks.size());
+
+        // Asama 3: DB kayit (kisa transaction, HTTP cagrisi yok)
+        final String finalPlaylistName = playlistName;
+        final List<TrackDto> finalTracks = tracks;
+        return transactionTemplate.execute(status ->
+                persistPlaylistData(placeId, request.getPlaylistId(), ownerUserId, finalPlaylistName, finalTracks)
+        );
+    }
+
+    private MusicSessionDto persistPlaylistData(Integer placeId, String playlistId, Integer ownerUserId,
+                                                 String playlistName, List<TrackDto> tracks) {
+        MusicVenueSessionEntity session = getOrCreateSessionEntity(placeId, ownerUserId);
 
         clearRoundsAndVotes(placeId);
         musicTrackRepository.deleteByPlaceId(placeId);
-        musicTrackRepository.flush(); // Değişiklikleri hemen yansıt
 
         java.util.Set<String> processedUris = new java.util.HashSet<>();
         for (TrackDto track : tracks) {
             if (track.getSpotifyUri() == null || processedUris.contains(track.getSpotifyUri())) {
                 continue;
             }
-            
             MusicTrackEntity entity = new MusicTrackEntity();
             entity.setPlaceId(placeId);
-            entity.setPlaylistId(request.getPlaylistId());
+            entity.setPlaylistId(playlistId);
             entity.setSpotifyTrackId(track.getSpotifyTrackId());
             entity.setSpotifyUri(track.getSpotifyUri());
             entity.setName(limit(track.getName(), 1024));
@@ -210,7 +226,8 @@ public class MusicVoteService {
             processedUris.add(track.getSpotifyUri());
         }
 
-        session.setSelectedPlaylistId(request.getPlaylistId());
+        log.info("Toplam {} sarki kaydedildi, oturum guncelleniyor.", processedUris.size());
+        session.setSelectedPlaylistId(playlistId);
         session.setPlaylistName(playlistName);
         session.setCurrentTrackOffset(0);
         session.setActive(true);
@@ -234,14 +251,17 @@ public class MusicVoteService {
                 .orElse(null);
     }
 
-    @Transactional
+    // @Transactional yok — Spotify HTTP cagrisi (getPlaybackState) transaction disinda kalir, pool size=1 ile deadlock onlenir
     public VoteRoundDto startNextRound(Integer placeId, Integer ownerUserId, String userRole) {
         requireOwner(ownerUserId, userRole);
         return startNextRoundInternal(placeId, ownerUserId);
     }
 
     private VoteRoundDto startNextRoundInternal(Integer placeId, Integer ownerUserId) {
-        MusicVenueSessionEntity session = getSessionByPlace(placeId);
+        MusicVenueSessionEntity session = ownerUserId != null
+                ? musicVenueSessionRepository.findByPlaceIdAndOwnerUserId(placeId, ownerUserId)
+                        .orElseGet(() -> getSessionByPlace(placeId))
+                : getSessionByPlace(placeId);
 
         voteRoundRepository.findFirstByPlaceIdAndStatusOrderByRoundNumberDesc(placeId, VoteRoundStatus.ACTIVE)
                 .ifPresent(round -> {
@@ -315,26 +335,27 @@ public class MusicVoteService {
                 VoteRoundStatus.ACTIVE, now);
 
         for (VoteRoundEntity round : roundsToClose) {
+            MusicVenueSessionEntity session = musicVenueSessionRepository.findFirstByPlaceIdOrderByIdAsc(round.getPlaceId()).orElse(null);
+            if (session == null || session.getOwnerUserId() == null) continue;
+
+            // Tur kapatma ve Spotify calma — ayri try/catch: Spotify hatasi yeni turu engellemesin
             try {
                 log.info("Otomatik gecis tetikleniyor: Mekan {}, Tur {}", round.getPlaceId(), round.getRoundNumber());
-                
-                // Mekan sahibini bul
-                MusicVenueSessionEntity session = musicVenueSessionRepository.findByPlaceId(round.getPlaceId()).orElse(null);
-                if (session == null || session.getOwnerUserId() == null) continue;
-
-                // Oylamayı kapat ve kazananı çal
                 closeCurrentRoundAndPlayWinnerInternal(round.getPlaceId(), null, session.getOwnerUserId());
-                
-                // Yeni turu başlat
-                startNextRoundInternal(round.getPlaceId(), session.getOwnerUserId());
-                
             } catch (Exception e) {
-                log.error("Otomatik gecis sirasinda hata: Mekan {}, Hata: {}", round.getPlaceId(), e.getMessage());
+                log.error("Tur kapatma sirasinda hata (Mekan {}): {}", round.getPlaceId(), e.getMessage());
+            }
+
+            // Yeni turu her durumda baslatmaya calis (onceki tur kapatildi veya zaten kapali)
+            try {
+                startNextRoundInternal(round.getPlaceId(), session.getOwnerUserId());
+            } catch (Exception e) {
+                log.error("Yeni tur baslatma sirasinda hata (Mekan {}): {}", round.getPlaceId(), e.getMessage());
             }
         }
     }
 
-    @Transactional
+    // @Transactional yok — round.save() aninda commit edilir; Spotify startPlayback hatasi round'u geri acmaz
     public VoteRoundDto closeCurrentRoundAndPlayWinner(Integer placeId, CloseRoundRequest request, Integer ownerUserId, String userRole) {
         requireOwner(ownerUserId, userRole);
         return closeCurrentRoundAndPlayWinnerInternal(placeId, request, ownerUserId);
@@ -383,9 +404,12 @@ public class MusicVoteService {
 
     @Transactional(readOnly = true)
     public PublicVoteSessionDto getPublicSessionByPlaceId(Integer placeId) {
-        MusicVenueSessionEntity session = musicVenueSessionRepository.findByPlaceId(placeId)
-                .orElseThrow(() -> new ResourceNotFoundException("Mekan için oylama oturumu bulunamadı."));
-        
+        // Önce verilen masa/mekan ID'si ile ara; yoksa herhangi aktif oturumu döndür (tek venue senaryosu)
+        MusicVenueSessionEntity session = musicVenueSessionRepository.findFirstByPlaceIdOrderByIdAsc(placeId)
+                .filter(s -> Boolean.TRUE.equals(s.getActive()))
+                .or(() -> musicVenueSessionRepository.findFirstByActiveTrueOrderByIdAsc())
+                .orElseThrow(() -> new ResourceNotFoundException("Aktif müzik oylama oturumu bulunamadı."));
+
         if (!Boolean.TRUE.equals(session.getActive())) {
             throw new BadRequestException("Bu mekanın oylaması şu an aktif değil.");
         }
@@ -498,7 +522,7 @@ public class MusicVoteService {
     }
 
     private MusicVenueSessionEntity getSessionByPlace(Integer placeId) {
-        return musicVenueSessionRepository.findByPlaceId(placeId)
+        return musicVenueSessionRepository.findFirstByPlaceIdOrderByIdAsc(placeId)
                 .orElseThrow(() -> new ResourceNotFoundException("Mekan muzik oylama oturumu bulunamadi."));
     }
 
@@ -513,6 +537,7 @@ public class MusicVoteService {
                 .map(VoteRoundEntity::getId)
                 .toList();
         if (!roundIds.isEmpty()) {
+            log.info("Siliniyor: {} oy turu ve oylar (placeId={})", roundIds.size(), placeId);
             voteRepository.deleteByRoundIdIn(roundIds);
         }
         voteRoundRepository.deleteByPlaceId(placeId);

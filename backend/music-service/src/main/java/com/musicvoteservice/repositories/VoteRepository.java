@@ -2,7 +2,10 @@ package com.musicvoteservice.repositories;
 
 import com.musicvoteservice.models.VoteEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collection;
 import java.util.Optional;
@@ -13,5 +16,8 @@ public interface VoteRepository extends JpaRepository<VoteEntity, Integer> {
 
     long countByRoundIdAndTrackId(Integer roundId, Integer trackId);
 
+    @Modifying(clearAutomatically = true)
+    @Transactional
+    @Query("DELETE FROM VoteEntity v WHERE v.roundId IN :roundIds")
     void deleteByRoundIdIn(Collection<Integer> roundIds);
 }

@@ -17,7 +17,7 @@ const REFRESH_TOKEN_KEY = 'refreshToken';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 15000,
+  timeout: 60000,
   headers: {
     'Content-Type': 'application/json',
   },

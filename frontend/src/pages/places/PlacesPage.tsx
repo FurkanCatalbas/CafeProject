@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Plus, Search, Edit, Trash2, MapPin, Users, CheckCircle, QrCode, ExternalLink } from 'lucide-react';
 import { placesService } from '../../services/placesService';
 import ModalOverlay from '../../components/common/ModalOverlay';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface Place {
   id: number;
@@ -13,6 +14,7 @@ interface Place {
 }
 
 const PlacesPage: React.FC = () => {
+  const { user } = useAuth();
   const [places, setPlaces] = useState<Place[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -76,9 +78,8 @@ const PlacesPage: React.FC = () => {
   };
 
   const handleCreatePlace = async () => {
-    const managerId = Number(newPlace.managerId);
-    if (!newPlace.name.trim() || !Number.isFinite(managerId) || managerId <= 0) {
-      setError('Masa oluşturmak için ad ve geçerli yönetici numarası zorunludur.');
+    if (!newPlace.name.trim()) {
+      setError('Masa oluşturmak için ad zorunludur.');
       return;
     }
 
@@ -87,7 +88,7 @@ const PlacesPage: React.FC = () => {
     try {
       await placesService.create({
         name: newPlace.name.trim(),
-        managerId,
+        managerId: user?.id || 1,
         status: newPlace.status,
       });
       await loadPlaces();
@@ -134,9 +135,8 @@ const PlacesPage: React.FC = () => {
       return;
     }
 
-    const managerId = Number(editPlace.managerId);
-    if (!editPlace.name.trim() || !Number.isFinite(managerId) || managerId <= 0) {
-      setError('Masa güncellemek için ad ve geçerli yönetici numarası zorunludur.');
+    if (!editPlace.name.trim()) {
+      setError('Masa güncellemek için ad zorunludur.');
       return;
     }
 
@@ -146,7 +146,7 @@ const PlacesPage: React.FC = () => {
       await placesService.update({
         id: editingPlaceId,
         name: editPlace.name.trim(),
-        managerId,
+        managerId: Number(editPlace.managerId) || user?.id || 1,
         status: editPlace.status,
       });
       await loadPlaces();
@@ -374,14 +374,6 @@ const PlacesPage: React.FC = () => {
                 onChange={(e) => setNewPlace((prev) => ({ ...prev, name: e.target.value }))}
                 className="input-field w-full"
               />
-              <input
-                type="number"
-                min={1}
-                placeholder="Yönetici numarası"
-                value={newPlace.managerId}
-                onChange={(e) => setNewPlace((prev) => ({ ...prev, managerId: e.target.value }))}
-                className="input-field w-full"
-              />
               <select
                 className="input-field w-full"
                 value={newPlace.status}
@@ -422,14 +414,6 @@ const PlacesPage: React.FC = () => {
                 placeholder="Masa Adı"
                 value={editPlace.name}
                 onChange={(e) => setEditPlace((prev) => ({ ...prev, name: e.target.value }))}
-                className="input-field w-full"
-              />
-              <input
-                type="number"
-                min={1}
-                placeholder="Yönetici numarası"
-                value={editPlace.managerId}
-                onChange={(e) => setEditPlace((prev) => ({ ...prev, managerId: e.target.value }))}
                 className="input-field w-full"
               />
               <select
