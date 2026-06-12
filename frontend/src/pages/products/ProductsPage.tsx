@@ -186,10 +186,12 @@ const ProductsPage: React.FC = () => {
     }
   };
 
-  const filteredProducts = products.filter((product) =>
-    product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    product.category.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredProducts = products
+    .filter((product) =>
+      product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      product.category.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+    .sort((a, b) => a.category.localeCompare(b.category));
 
   if (loading) {
     return (
@@ -235,54 +237,70 @@ const ProductsPage: React.FC = () => {
         />
       </div>
 
-      {/* Ürün Kartları */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {filteredProducts.map((product) => (
-          <div key={product.id} className="card">
-            <div className="aspect-square bg-gray-100 rounded-lg mb-4 flex items-center justify-center">
-              <Package className="w-16 h-16 text-gray-600" />
-            </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-1">{product.name}</h3>
-            <p className="text-sm text-gray-600 mb-3 line-clamp-2">{product.description}</p>
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-xl font-bold text-primary-500">{formatTryCurrency(product.price)}</span>
-              <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                product.isActive
-                  ? 'bg-green-900/50 text-green-300'
-                  : 'bg-gray-700 text-gray-400'
-              }`}>
-                {product.isActive ? 'Aktif' : 'Pasif'}
-              </span>
-            </div>
-            <div className="flex items-center justify-between text-sm text-gray-400 mb-4">
-              {canManageProducts && <span className="text-gray-600">Stok: {product.stock}</span>}
-              <span className="text-gray-600">{product.category}</span>
-            </div>
-            {canManageProducts && (
-              <div className="flex gap-2">
-                <button
-                  onClick={() => handleOpenEditProduct(product)}
-                  className="btn-secondary flex-1 text-sm flex items-center justify-center gap-1"
-                >
-                  <Edit className="w-4 h-4" />
-                  Düzenle
-                </button>
-                <button
-                  onClick={() => handleDeleteProduct(product.id)}
-                  className="p-2 text-gray-400 hover:text-red-400 hover:bg-red-900/20 rounded-lg"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
+      {/* Ürün Listesi - Kategori Başlıklarına Göre Gruplanmış */}
+      {filteredProducts.length > 0 ? (
+        <div className="space-y-12">
+          {Array.from(new Set(filteredProducts.map((p) => p.category))).map((category) => (
+            <div key={category} className="space-y-6">
+              <div className="flex items-center gap-4">
+                <h2 className="text-2xl font-bold text-gray-800 capitalize">{category}</h2>
+                <div className="h-px flex-1 bg-gray-200"></div>
+                <span className="text-sm text-gray-500 font-medium">
+                  {filteredProducts.filter(p => p.category === category).length} Ürün
+                </span>
               </div>
-            )}
-          </div>
-        ))}
-        {filteredProducts.length === 0 && (
-          <div className="col-span-full rounded-xl border border-gray-200 bg-white p-6 text-center text-sm text-gray-500">
-            Ürün bulunamadı.
-          </div>
-        )}
-      </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {filteredProducts
+                  .filter((p) => p.category === category)
+                  .map((product) => (
+                    <div key={product.id} className="card">
+                      <div className="aspect-square bg-gray-100 rounded-lg mb-4 flex items-center justify-center">
+                        <Package className="w-16 h-16 text-gray-600" />
+                      </div>
+                      <h3 className="text-lg font-semibold text-gray-900 mb-1">{product.name}</h3>
+                      <p className="text-sm text-gray-600 mb-3 line-clamp-2">{product.description}</p>
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="text-xl font-bold text-primary-500">{formatTryCurrency(product.price)}</span>
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          product.isActive
+                            ? 'bg-green-900/50 text-green-300'
+                            : 'bg-gray-700 text-gray-400'
+                        }`}>
+                          {product.isActive ? 'Aktif' : 'Pasif'}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between text-sm text-gray-400 mb-4">
+                        {canManageProducts && <span className="text-gray-600">Stok: {product.stock}</span>}
+                        <span className="text-gray-600">{product.category}</span>
+                      </div>
+                      {canManageProducts && (
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => handleOpenEditProduct(product)}
+                            className="btn-secondary flex-1 text-sm flex items-center justify-center gap-1"
+                          >
+                            <Edit className="w-4 h-4" />
+                            Düzenle
+                          </button>
+                          <button
+                            onClick={() => handleDeleteProduct(product.id)}
+                            className="p-2 text-gray-400 hover:text-red-400 hover:bg-red-900/20 rounded-lg"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="rounded-xl border border-gray-200 bg-white p-6 text-center text-sm text-gray-500">
+          Ürün bulunamadı.
+        </div>
+      )}
 
       {/* Ürün Ekleme Modalı */}
       {showCreateModal && (
@@ -304,10 +322,10 @@ const ProductsPage: React.FC = () => {
                   onChange={(e) => setNewProduct((prev) => ({ ...prev, category: e.target.value }))}
                 >
                   <option value="">Kategori Seçin</option>
-                  <option value="KAHVE">Kahve</option>
-                  <option value="HAMUR_ISI">Hamur İşi</option>
-                  <option value="SANDVIC">Sandviç</option>
-                  <option value="TATLI">Tatlı</option>
+                  <option value="soğuk içecek">Soğuk İçecek</option>
+                  <option value="sıcak içecek">Sıcak İçecek</option>
+                  <option value="çorba">Çorba</option>
+                  <option value="tatlı">Tatlı</option>
                 </select>
               </div>
               <textarea
@@ -377,13 +395,17 @@ const ProductsPage: React.FC = () => {
                   onChange={(e) => setEditProduct((prev) => ({ ...prev, name: e.target.value }))}
                   className="input-field"
                 />
-                <input
-                  type="text"
-                  placeholder="Kategori"
+                <select
+                  className="input-field"
                   value={editProduct.category}
                   onChange={(e) => setEditProduct((prev) => ({ ...prev, category: e.target.value }))}
-                  className="input-field"
-                />
+                >
+                  <option value="">Kategori Seçin</option>
+                  <option value="soğuk içecek">Soğuk İçecek</option>
+                  <option value="sıcak içecek">Sıcak İçecek</option>
+                  <option value="çorba">Çorba</option>
+                  <option value="tatlı">Tatlı</option>
+                </select>
               </div>
               <textarea
                 placeholder="Açıklama"

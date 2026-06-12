@@ -664,6 +664,7 @@ const OrdersPage: React.FC = () => {
                           type="number"
                           placeholder="Adet"
                           min={1}
+                          max={product?.stock}
                           value={item.quantity}
                           onChange={(e) => updateItemInOrder(index, 'quantity', e.target.value)}
                           className="input-field w-20"

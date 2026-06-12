@@ -36,6 +36,8 @@ public class ProductsServiceImpl implements ProductsService {
     }
 
     private ProductDto saveOrUpdate(RecordStatusType recordStatusType, ProductDto dto) {
+        validateCategory(dto.getCategory());
+        
         if (recordStatusType == RecordStatusType.CREATE) {
             DefaultValueSetterBaseDto.setDefaultValue(dto, RecordStatusType.CREATE, null);
         } else if (recordStatusType == RecordStatusType.UPDATE) {
@@ -46,6 +48,17 @@ public class ProductsServiceImpl implements ProductsService {
         dto.setId(entity.getId());
 
         return toDto(entity);
+    }
+
+    private void validateCategory(String category) {
+        if (category == null || category.isBlank()) {
+            throw new com.wise.core.exceptions.BadRequestException("Kategori zorunludur.");
+        }
+        try {
+            com.wise.core.enums.ProductCategory.fromValue(category);
+        } catch (IllegalArgumentException e) {
+            throw new com.wise.core.exceptions.BadRequestException("Gecersiz kategori: " + category + ". Gecerli kategoriler: soğuk içecek, sıcak içecek, çorba, tatlı");
+        }
     }
 
     @Override

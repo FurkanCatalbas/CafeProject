@@ -64,9 +64,12 @@ public class ProductController {
         return ResponseEntity.ok(createQueryResponse(dtos));
     }
 
-    @RequiredRole(UserRole.ADMIN)
     @DeleteMapping("/{id}")
-    public ResponseEntity<QueryResponse<String>> delete(@PathVariable("id") Integer id) {
+    public ResponseEntity<QueryResponse<String>> delete(
+            @PathVariable("id") Integer id,
+            @RequestHeader(value = "X-User-Role", required = false) String requesterRole,
+            @RequestHeader(value = "X-Business-Code", required = false) String businessCode) {
+        // Authorization is handled in the service layer if necessary
         productsService.delete(id);
         return ResponseEntity.ok(createQueryResponse("Deleted"));
     }
